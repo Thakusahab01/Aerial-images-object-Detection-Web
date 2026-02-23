@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroDetect | Aerial AI Object Detection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* CSS Variables for Theming */
+        :root {
+            /* Light Theme */
+            --bg-main: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 50%, #f8fafc 100%);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-bg: rgba(255,255,255,0.85);
+            --glass-bg: rgba(255,255,255,0.15);
+            --primary: #1e40af;
+            --secondary: #3b82f6;
+            --accent: #f59e0b;
+            --shadow-light: rgba(99, 102, 241, 0.15);
+            --shadow-heavy: rgba(59, 130, 246, 0.25);
+            --nav-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        body.dark-mode {
+            --bg-main: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --card-bg: rgba(26, 32, 44, 0.75);
+            --glass-bg: rgba(15, 23, 42, 0.4);
+            --primary: #60a5fa;
+            --secondary: #93c5fd;
+            --accent: #fbbf24;
+            --shadow-light: rgba(99, 102, 241, 0.3);
+            --shadow-heavy: rgba(59, 130, 246, 0.4);
+            --nav-bg: rgba(15, 23, 42, 0.95);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            overflow-x: hidden;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        /* Animated Background Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--secondary), var(--accent));
+            animation: float 15s infinite linear;
+        }
+
+        /* Glassmorphism & Advanced Animations */
+        @keyframes float {
+            0% { transform: translateY(100vh) translateX(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) translateX(100px) rotate(360deg); opacity: 0; }
+        }
+
+        @keyframes fadeUp3D {
+            0% { 
+                opacity: 0; 
+                transform: translateY(60px) translateZ(-50px) scale(0.9); 
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0) translateZ(0) scale(1); 
+            }
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { 
+                box-shadow: 0 0 20px var(--shadow-light), 0 0 40px var(--shadow-light); 
+            }
+            50% { 
+                box-shadow: 0 0 40px var(--secondary), 0 0 80px var(--shadow-heavy), 0 0 120px var(--shadow-light); 
+            }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        @keyframes rotate3D {
+            0% { transform: rotateY(0deg) rotateX(0deg) rotateZ(0deg); }
+            100% { transform: rotateY(360deg) rotateX(180deg) rotateZ(360deg); }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(80px) scale(0.95);
+            transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Navbar */
+        nav {
+            background: var(--nav-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            padding: 1.2rem 5%;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        nav.scrolled {
+            padding: 0.8rem 5%;
+            backdrop-filter: blur(50px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        }
+
+        nav .logo {
+            font-size: 2.2rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            transition: all 0.4s ease;
+            letter-spacing: -1px;
+        }
+
+        nav .logo:hover {
+            transform: scale(1.05) rotate(2deg);
+        }
+
+        nav .logo i {
+            font-size: 2.5rem;
+            animation: glowPulse 4s infinite;
+        }
+
+        nav ul {
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+            list-style: none;
+        }
+
+        nav a {
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 3px;
+            bottom: -8px;
+            left: 50%;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            border-radius: 2px;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: translateX(-50%);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        nav a:hover {
+            color: var(--secondary);
+            transform: translateY(-3px);
+        }
+
+        /* Theme Toggle */
+        #theme-toggle {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--secondary);
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--secondary);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #theme-toggle::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: var(--secondary);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.4s ease;
+        }
+
+        #theme-toggle:hover::before {
+            width: 120%;
+            height: 120%;
+        }
+
+        #theme-toggle:hover {
+            transform: rotate(180deg) scale(1.2);
+            box-shadow: 0 0 40px var(--shadow-heavy);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 2rem;
+            position: relative;
+            background: 
+                linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)),
+                url('https://images.unsplash.com/photo-1518349619113-03114f06124e?auto=format&fit=crop&q=85') center/cover fixed;
+            clip-path: polygon(0 0, 100% 0, 100% 92%, 0 100%);
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, var(--secondary) 50%, transparent 70%);
+            opacity: 0.1;
+            animation: shimmer 4s infinite;
+        }
+
+        .hero h1 {
+            font-size: clamp(4rem, 10vw, 7rem);
+            margin-bottom: 2.5rem;
+            max-width: 1100px;
+            background: linear-gradient(45deg, #ffffff, var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 900;
+            letter-spacing: -2px;
+            position: relative;
+            z-index: 2;
+            animation: fadeUp3D 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        .hero p {
+            font-size: clamp(1.3rem, 4vw, 2rem);
+            max-width: 850px;
+            margin-bottom: 4rem;
+            opacity: 0.95;
+            line-height: 1.6;
+            position: relative;
+            z-index: 2;
+            animation: fadeUp3D 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s forwards;
+        }
+
+        .hero-btns {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeUp3D 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.8s forwards;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 1.5rem 4rem;
+            border-radius: 60px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 1.2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--secondary), var(--accent));
+            color: white;
+            box-shadow: 0 20px 50px var(--shadow-heavy);
+            animation: glowPulse 3s infinite;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.8s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-8px) scale(1.08);
+            box-shadow: 0 30px 70px var(--shadow-heavy);
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 25px 60px var(--shadow-light);
+        }
+
+        /* Floating Status Badge */
+        .hero-floating-badge {
+            position: absolute;
+            bottom: 12%;
+            right: 8%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            padding: 1.5rem 2.5rem;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: float 6s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        /* Sections */
+        section {
+            padding: 10rem 5%;
+            position: relative;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            margin-bottom: 5rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 120px;
+            height: 6px;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            margin: 1.5rem auto 0;
+            border-radius: 4px;
+            animation: glowPulse 3s infinite;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 4rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            perspective: 1200px;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 4rem 3rem;
+            border-radius: 30px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform-style: preserve-3d;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            transform: scaleX(0);
+            transition: transform 0.6s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-20px) translateZ(50px) rotateX(8deg);
+            box-shadow: 0 40px 120px var(--shadow-heavy);
+        }
+
+        .feature-icon {
+            font-size: 5rem;
+            margin-bottom: 2.5rem;
+            display: block;
+            animation: rotate3D 8s linear infinite;
+            transform: translateZ(40px);
+        }
+
+        .feature-card h3 {
+            font-size: 2.2rem;
+            margin-bottom: 1.8rem;
+            font-weight: 800;
+            transform: translateZ(30px);
+        }
+
+        /* About Section */
+        .about-section {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 40px;
+            margin: 6rem 5%;
+            padding: 8rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8rem;
+            align-items: center;
+            box-shadow: 0 40px 120px var(--shadow-light);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .about-section::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -15%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+            opacity: 0.1;
+            animation: float 20s infinite linear;
+        }
+
+        .about-image {
+            position: relative;
+            border-radius: 30px;
+            overflow: hidden;
+            transform: perspective(1500px) rotateY(-12deg);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .about-image:hover {
+            transform: perspective(1500px) rotateY(0deg) scale(1.05);
+        }
+
+        .about-image img {
+            width: 100%;
+            height: 450px;
+            object-fit: cover;
+            transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            filter: brightness(1.15) contrast(1.15);
+        }
+
+        .about-image:hover img {
+            transform: scale(1.15);
+        }
+
+        /* CTA */
+        .cta {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            text-align: center;
+            padding: 10rem 2rem;
+            margin-top: 8rem;
+            clip-path: polygon(0 15%, 100% 0, 100% 100%, 0 85%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            animation: shimmer 6s infinite;
+        }
+
+        .cta > * { position: relative; z-index: 2; }
+
+        /* Footer */
+        footer {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(20px);
+            color: rgba(248, 250, 252, 0.8);
+            text-align: center;
+            padding: 4rem;
+            font-size: 1.1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav ul { 
+                position: fixed;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--nav-bg);
+                flex-direction: column;
+                padding: 3rem;
+                gap: 2rem;
+                transform: translateY(-100%);
+                opacity: 0;
+                transition: all 0.5s ease;
+            }
+            
+            .hero-btns { flex-direction: column; gap: 1.5rem; }
+            .about-section { 
+                grid-template-columns: 1fr;
+                gap: 4rem;
+                margin: 3rem 2%;
+                padding: 4rem 2rem;
+            }
+            .hero-floating-badge { display: none; }
+        }
+
+        /* Mouse Trail */
+        .mouse-trail {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <nav id="nav">
+        <a href="index.html" class="logo">
+            <i class="fas fa-satellite"></i>
+            Aero<span>Detect</span>
+        </a>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#about">Model</a></li>
+            <li><a href="/login" class="btn-nav">
+                <i class="fas fa-rocket"></i> Get Started
+            </a></li>
+        </ul>
+        <button id="theme-toggle" title="Toggle Theme">
+            <i class="fas fa-moon"></i>
+        </button>
+    </nav>
+
+    <header id="home" class="hero reveal">
+        <h1>Pixel-Perfect Aerial Intelligence</h1>
+        <p>Transform raw drone & satellite imagery into actionable insights with state-of-the-art AI segmentation. Detect every building, vehicle, and terrain feature with surgical precision.</p>
+        <div class="hero-btns">
+            <a href="/login" class="btn-primary">
+                <i class="fas fa-magic"></i> Analyze Now
+            </a>
+            <a href="#about" class="btn-secondary">
+                <i class="fas fa-info-circle"></i> Learn More
+            </a>
+        </div>
+        <div class="hero-floating-badge">
+            <i class="fas fa-bolt" style="font-size: 2rem; color: var(--accent);"></i>
+            <div>
+                <strong>Live Model v3.2</strong><br>
+                <span style="font-size: 0.85rem; opacity: 0.8;">99.2% mIoU • <100ms inference</span>
+            </div>
+        </div>
+    </header>
+
+    <section id="features">
+        <h2 class="section-title reveal">Next-Gen Aerial Analysis</h2>
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feature-icon">🎯</div>
+                <h3>Pixel-Perfect Precision</h3>
+                <p>Dense semantic segmentation classifies every pixel, enabling precise boundary detection of complex aerial objects even in cluttered urban environments.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">⚡</div>
+                <h3>Lightning Inference</h3>
+                <p>Optimized neural architecture processes 8K orthomosaics in under 100ms with GPU acceleration and model quantization for edge deployment.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">🛰️</div>
+                <h3>Multi-Scale Detection</h3>
+                <p>Adaptive feature pyramid networks handle extreme scale variations from individual cars to entire city blocks in single-pass inference.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="about-section">
+        <div class="about-image reveal">
+            <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=85&w=1200" alt="AI Aerial Analysis">
+        </div>
+        <div class="about-text reveal">
+            <h2>Deep Learning Architecture</h2>
+            <p>Our transformer-enhanced U-Net architecture overcomes traditional CNN limitations in aerial imagery by capturing long-range spatial dependencies across entire scenes.</p>
+            <p>Multi-head attention mechanisms and dilated convolutions enable simultaneous detection of micro-scale features (vehicles, trees) and macro-scale structures (buildings, highways) with unprecedented accuracy.</p>
+            <a href="/login" class="btn-primary">
+                <i class="fas fa-cloud-upload-alt"></i> Process Your Imagery
+            </a>
+        </div>
+    </section>
+
+    <section class="cta reveal">
+        <h2>Ready for Mission Critical Analysis?</h2>
+        <p>Join 500+ enterprises using AeroDetect for urban planning, disaster response, and infrastructure monitoring.</p>
+        <a href="/login" class="btn-primary" style="font-size: 1.5rem; padding: 2rem 5rem;">
+            <i class="fas fa-user-plus"></i> Start Free Trial
+        </a>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 <span>AeroDetect AI</span> • Built for Aerial Excellence</p>
+    </footer>
+
+    <script>
+        // Theme System
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        const nav = document.getElementById('nav');
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'dark') {
+            body.classList.add('dark-mode');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            nav.classList.toggle('scrolled', window.scrollY > 100);
+        });
+
+        // Particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 80; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDuration = (Math.random() * 15 + 10) + 's';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.width = particle.style.height = (Math.random() * 6 + 2) + 'px';
+                particle.style.opacity = Math.random() * 0.6 + 0.3;
+                container.appendChild(particle);
+            }
+        }
+
+        // Scroll Reveal
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // 3D Card Tilt
+        document.querySelectorAll('.feature-card, .about-image').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = (y - centerY) / centerY * -8;
+                const rotateY = (x - centerX) / centerX * 8;
+                card.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                card.style.transition = 'none';
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1200px) rotateX(0) rotateY(0)';
+                card.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            });
+        });
+
+        // Mouse Trail
+        document.addEventListener('mousemove', (e) => {
+            const trail = document.createElement('div');
+            trail.className = 'mouse-trail';
+            trail.style.left = e.clientX + 'px';
+            trail.style.top = e.clientY + 'px';
+            trail.style.width = '8px';
+            trail.style.height = '8px';
+            trail.style.background = 'radial-gradient(circle, var(--secondary), transparent)';
+            document.body.appendChild(trail);
+            setTimeout(() => trail.remove(), 400);
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+        });
+    </script>
+</body>
+</html>
