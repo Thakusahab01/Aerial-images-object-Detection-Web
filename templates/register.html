@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign Up — AerialView Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#FF2D2D;--red2:#FF6B35;--cyan:#00D4FF;--teal:#00FFB3;
+  --bg:#060810;--bg2:#0C0F1A;
+  --glass:rgba(255,255,255,0.04);--glass2:rgba(255,255,255,0.08);
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --text:#E2E8F0;--muted:#64748B;--faint:#2A3042;
+  --font:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;}
+::selection{background:rgba(0,212,255,0.25);color:#fff;}
+
+/* bg canvas */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.scan-line{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
+.scan-line::before{content:'';position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.4),transparent);animation:scanDown 8s linear infinite;top:-1px;}
+@keyframes scanDown{0%{top:-1px}100%{top:100%}}
+.grid-overlay{position:fixed;inset:0;z-index:1;pointer-events:none;background-image:linear-gradient(rgba(0,212,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.025) 1px,transparent 1px);background-size:50px 50px;}
+
+/* layout */
+.page{position:relative;z-index:2;min-height:100vh;display:flex;}
+
+/* left panel */
+.left-panel{flex:1;position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(0,255,179,0.03),rgba(0,212,255,0.04));border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px;}
+.left-panel::before{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1000&q=70') center/cover;opacity:0.06;}
+.lp-inner{position:relative;z-index:1;max-width:400px;}
+.lp-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 14px;border-radius:20px;background:rgba(0,255,179,0.07);border:1px solid rgba(0,255,179,0.2);font-family:var(--mono);font-size:10px;color:var(--teal);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:32px;}
+.lp-badge::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--teal);animation:pulse 1.5s ease infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.lp-h{font-size:clamp(2rem,3.5vw,3rem);font-weight:900;color:#fff;letter-spacing:-0.04em;line-height:1.05;margin-bottom:16px;}
+.lp-h span{background:linear-gradient(135deg,var(--teal),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.lp-sub{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:40px;}
+.feature-list{display:flex;flex-direction:column;gap:14px;}
+.feat-item{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;border-radius:10px;background:var(--glass);border:1px solid var(--border);}
+.feat-dot{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.feat-text-t{font-size:12px;font-weight:600;color:#fff;margin-bottom:2px;}
+.feat-text-d{font-size:11px;color:var(--muted);line-height:1.4;}
+.corner{position:absolute;pointer-events:none;}
+.corner::before,.corner::after{content:'';position:absolute;background:rgba(0,255,179,0.25);}
+.c-tl{top:24px;left:24px;}.c-tl::before{top:0;left:0;width:16px;height:1px}.c-tl::after{top:0;left:0;width:1px;height:16px}
+.c-tr{top:24px;right:24px;}.c-tr::before{top:0;right:0;width:16px;height:1px}.c-tr::after{top:0;right:0;width:1px;height:16px}
+.c-bl{bottom:24px;left:24px;}.c-bl::before{bottom:0;left:0;width:16px;height:1px}.c-bl::after{bottom:0;left:0;width:1px;height:16px}
+.c-br{bottom:24px;right:24px;}.c-br::before{bottom:0;right:0;width:16px;height:1px}.c-br::after{bottom:0;right:0;width:1px;height:16px}
+
+/* right panel */
+.right-panel{width:460px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;padding:80px 52px 52px;overflow-y:auto;background:var(--bg2);position:relative;}
+.form-nav{position:absolute;top:28px;left:52px;right:52px;display:flex;align-items:center;justify-content:space-between;}
+.form-brand{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.brand-badge{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--red),var(--red2));display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 0 16px rgba(255,45,45,0.35);animation:badgePulse 3s ease-in-out infinite;}
+@keyframes badgePulse{0%,100%{box-shadow:0 0 16px rgba(255,45,45,0.35)}50%{box-shadow:0 0 28px rgba(255,45,45,0.6)}}
+.brand-name{font-size:14px;font-weight:700;color:#fff;letter-spacing:-0.02em;}
+.back-link{font-size:12px;color:var(--muted);text-decoration:none;transition:color 0.2s;}
+.back-link:hover{color:#fff;}
+
+.form-tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--teal);margin-bottom:14px;}
+.form-tag::before{content:'//';opacity:0.5;}
+.form-h{font-size:1.7rem;font-weight:800;color:#fff;letter-spacing:-0.03em;margin-bottom:6px;}
+.form-sub{font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.5;}
+.form-sub a{color:var(--cyan);text-decoration:none;font-weight:500;}
+.form-sub a:hover{text-decoration:underline;}
+
+/* alert banners */
+.alert{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-radius:10px;font-size:12px;line-height:1.5;margin-bottom:18px;animation:alertIn 0.3s ease;}
+@keyframes alertIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.alert-error  {background:rgba(255,45,45,0.08);  border:1px solid rgba(255,45,45,0.4);  color:#FF8A8A;}
+.alert-success{background:rgba(0,200,83,0.08);   border:1px solid rgba(0,200,83,0.35);  color:#00E676;}
+.alert-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+
+/* fields */
+.field{margin-bottom:18px;}
+.field-lbl{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block;}
+.input-wrap{position:relative;}
+.input-wrap .icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:0.45;}
+input[type=email],input[type=password]{
+  width:100%;padding:12px 14px 12px 42px;
+  background:var(--glass);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-family:var(--font);font-size:13px;
+  transition:all 0.2s;outline:none;
+}
+input:hover{border-color:var(--border2);background:var(--glass2);}
+input:focus{border-color:rgba(0,212,255,0.5);background:rgba(0,212,255,0.04);box-shadow:0 0 0 3px rgba(0,212,255,0.08);}
+input::placeholder{color:var(--muted);}
+input.field-has-err{border-color:rgba(255,45,45,0.5)!important;background:rgba(255,45,45,0.03)!important;}
+input.field-has-ok {border-color:rgba(0,255,179,0.45)!important;}
+.eye-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:2px;transition:color 0.2s;}
+.eye-btn:hover{color:#fff;}
+.field-err-msg{display:flex;align-items:center;gap:4px;font-size:11px;color:#FF8A8A;margin-top:6px;}
+.field-err-msg::before{content:'⚠';font-size:10px;}
+.field-ok-msg{font-size:11px;color:var(--teal);margin-top:6px;}
+
+
+
+/* submit button */
+.submit-btn{
+  width:100%;padding:13px;border:none;border-radius:10px;
+  background:linear-gradient(135deg,var(--red),var(--red2));
+  color:#fff;font-family:var(--font);font-size:13px;font-weight:700;
+  letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;
+  transition:all 0.22s;position:relative;overflow:hidden;
+  box-shadow:0 0 24px rgba(255,45,45,0.2);margin-top:4px;
+}
+.submit-btn:hover{transform:translateY(-1px);box-shadow:0 6px 32px rgba(255,45,45,0.45);}
+.submit-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent);pointer-events:none;}
+.submit-btn.loading{pointer-events:none;opacity:0.7;}
+.submit-btn .btn-text{transition:opacity 0.2s;}
+.submit-btn.loading .btn-text{opacity:0;}
+.submit-btn .spinner{position:absolute;inset:0;display:none;align-items:center;justify-content:center;}
+.submit-btn.loading .spinner{display:flex;}
+.sp{width:18px;height:18px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ripple */
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.15);transform:scale(0);animation:rippleAnim 0.5s linear;pointer-events:none;}
+@keyframes rippleAnim{to{transform:scale(4);opacity:0}}
+
+@media(max-width:900px){.left-panel{display:none;}.right-panel{width:100%;max-width:460px;margin:0 auto;}}
+@media(max-width:500px){.right-panel{padding:80px 24px 40px;}}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="scan-line"></div>
+<div class="grid-overlay"></div>
+
+<div class="page">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="corner c-tl"></div><div class="corner c-tr"></div>
+    <div class="corner c-bl"></div><div class="corner c-br"></div>
+    <div class="lp-inner">
+      <div class="lp-badge">Free Account — No Card Required</div>
+      <h2 class="lp-h">Start Seeing<br>the World<br><span>Differently</span></h2>
+      <p class="lp-sub">Join thousands of operators using AerialView Pro to extract intelligence from satellite and drone imagery across every terrain.</p>
+      <div class="feature-list">
+        <div class="feat-item">
+          <div class="feat-dot" style="background:rgba(0,212,255,0.12);">🔬</div>
+          <div><div class="feat-text-t">12+ AI Algorithms</div><div class="feat-text-d">Color, edge, texture and superpixel segmentation</div></div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-dot" style="background:rgba(0,255,179,0.12);">🎯</div>
+          <div><div class="feat-text-t">6 Sector Presets</div><div class="feat-text-d">Auto-tuned for agriculture, urban, disaster and more</div></div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-dot" style="background:rgba(255,215,0,0.12);">📊</div>
+          <div><div class="feat-text-t">Export & Analytics</div><div class="feat-text-d">JSON reports, history logs, and confidence scores</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT FORM PANEL -->
+  <div class="right-panel">
+    <div class="form-nav">
+      <a class="form-brand" href="{{ url_for('index') }}">
+        <div class="brand-badge">🛰</div>
+        <span class="brand-name">AerialView Pro</span>
+      </a>
+      <a class="back-link" href="{{ url_for('index') }}">← Home</a>
+    </div>
+
+    <div class="form-tag">Create Account</div>
+    <h1 class="form-h">Sign Up Free</h1>
+    <p class="form-sub">Already have an account? <a href="{{ url_for('login') }}">Log in →</a></p>
+
+    <!-- Flash messages (e.g. from login page) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+          <span class="alert-icon">{% if category == 'success' %}✓{% else %}✕{% endif %}</span>
+          <span>{{ message }}</span>
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <!-- General server error -->
+    {% if errors is defined and errors.general %}
+      <div class="alert alert-error">
+        <span class="alert-icon">✕</span>
+        <span>{{ errors.general }}</span>
+      </div>
+    {% endif %}
+
+    <!-- REGISTER FORM — only email, password, confirm password -->
+    <form method="POST" action="{{ url_for('register') }}" id="regForm" novalidate>
+      <div class="field">
+        <label class="field-lbl">Name</label>
+        <div class="input-wrap">
+          <span class="icon">👤</span>
+          <input type="text"
+                 name="name"
+                 id="name"
+                 placeholder="Name"
+                 value="{{ form.name if form is defined else '' }}"
+                 class="{{ 'field-has-err' if errors is defined and errors.name else '' }}">
+        </div>
+        {% if errors is defined and errors.name %}
+          <div class="field-err-msg">{{ errors.name }}</div>
+        {% endif %}
+      </div>
+      <!-- Email -->
+      <div class="field">
+        <label class="field-lbl">Email Address</label>
+        <div class="input-wrap">
+          <span class="icon">✉</span>
+          <input type="email"
+                 name="email"
+                 id="reg-email"
+                 placeholder="you@domain.com"
+                 autocomplete="email"
+                 value="{{ form.email if form is defined else '' }}"
+                 class="{{ 'field-has-err' if errors is defined and errors.email else '' }}">
+        </div>
+        {% if errors is defined and errors.email %}
+          <div class="field-err-msg">{{ errors.email }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <label class="field-lbl">Password</label>
+        <div class="input-wrap">
+          <span class="icon">🔑</span>
+          <input type="password"
+                 name="password"
+                 id="reg-pass"
+                 placeholder="Create a strong password"
+                 autocomplete="new-password"
+                 class="{{ 'field-has-err' if errors is defined and errors.password else '' }}">
+          <button type="button" class="eye-btn" id="eye1" onclick="togglePwd('reg-pass','eye1')">👁</button>
+        </div>
+        {% if errors is defined and errors.password %}
+          <div class="field-err-msg">{{ errors.password }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="field">
+        <label class="field-lbl">Confirm Password</label>
+        <div class="input-wrap">
+          <span class="icon">🔒</span>
+          <input type="password"
+                 name="confirm_password"
+                 id="reg-pass2"
+                 placeholder="Repeat your password"
+                 autocomplete="new-password"
+                 class="{{ 'field-has-err' if errors is defined and errors.confirm_password else '' }}">
+          <button type="button" class="eye-btn" id="eye2" onclick="togglePwd('reg-pass2','eye2')">👁</button>
+        </div>
+        {% if errors is defined and errors.confirm_password %}
+          <div class="field-err-msg">{{ errors.confirm_password }}</div>
+        {% else %}
+          <div class="field-ok-msg" id="ok-pass2" style="display:none;">✓ Passwords match</div>
+        {% endif %}
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="submit-btn" id="reg-submit">
+        <span class="btn-text">🛰 Create Account</span>
+        <span class="spinner"><span class="sp"></span></span>
+      </button>
+
+    </form>
+  </div>
+
+</div>
+
+<script>
+/* particles */
+(function(){
+  const c=document.getElementById('bg-canvas'),ctx=c.getContext('2d');
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  const pts=Array.from({length:55},()=>({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*1.2+0.2,vx:(Math.random()-0.5)*0.2,vy:(Math.random()-0.5)*0.2,a:Math.random()*0.3+0.04,hue:Math.random()<0.6?185:Math.random()<0.5?145:10}));
+  function draw(){ctx.clearRect(0,0,c.width,c.height);pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`hsla(${p.hue},90%,65%,${p.a})`;ctx.fill();p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>c.width)p.vx*=-1;if(p.y<0||p.y>c.height)p.vy*=-1;});for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<80){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle=`rgba(0,212,255,${0.05*(1-d/80)})`;ctx.lineWidth=0.4;ctx.stroke();}}requestAnimationFrame(draw);}
+  draw();
+})();
+
+/* ripple */
+document.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const r = document.createElement('span');
+  r.classList.add('ripple');
+  const rc = b.getBoundingClientRect(), sz = Math.max(rc.width, rc.height);
+  r.style.cssText = `width:${sz}px;height:${sz}px;left:${e.clientX-rc.left-sz/2}px;top:${e.clientY-rc.top-sz/2}px;`;
+  b.appendChild(r);
+  r.addEventListener('animationend', () => r.remove());
+});
+
+/* eye toggle */
+function togglePwd(id, btnId) {
+  const inp = document.getElementById(id);
+  const btn = document.getElementById(btnId);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+/* live confirm-match indicator */
+function checkPassMatch() {
+  const p1  = document.getElementById('reg-pass').value;
+  const p2  = document.getElementById('reg-pass2').value;
+  const ok  = document.getElementById('ok-pass2');
+  const inp = document.getElementById('reg-pass2');
+  if (!p2 || !ok) return;
+  if (p1 === p2) {
+    ok.style.display = 'block';
+    inp.classList.remove('field-has-err');
+    inp.classList.add('field-has-ok');
+  } else {
+    ok.style.display = 'none';
+    inp.classList.add('field-has-err');
+    inp.classList.remove('field-has-ok');
+  }
+}
+document.getElementById('reg-pass2').addEventListener('input', checkPassMatch);
+
+/* loading state on submit */
+document.getElementById('regForm').addEventListener('submit', () => {
+  document.getElementById('reg-submit').classList.add('loading');
+});
+
+/* real-time email validation */
+document.getElementById('reg-email').addEventListener('input', function() {
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value)) {
+    this.classList.remove('field-has-err');
+  }
+});
+</script>
+</body>
+</html>
