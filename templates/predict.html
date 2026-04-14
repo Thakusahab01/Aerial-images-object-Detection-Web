@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="result-container" style="padding-top: 100px;">
+    <div class="glass-morphism result-card" style="text-align: left; padding: 24px; margin-bottom: 24px;">
+        <h2 style="font-size: 1.8rem; margin-bottom: 4px;">Analysis Results</h2>
+        <p style="color: var(--text-secondary);">Pixel-level segmentation with automated land cover stats.</p>
+    </div>
+
+    <div class="result-grid" style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 24px;">
+        <!-- Image Panel -->
+        <div class="glass-morphism result-card" style="padding: 24px;">
+            <h4 class="result-label">Blended AI Overlay</h4>
+            <div style="border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border);">
+                <img src="{{ url_for('static', filename='results/overlay_' + filename) }}" class="result-image"
+                    alt="AI Overlay">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px;">
+                <div>
+                    <p class="result-label" style="font-size: 0.75rem;">Raw Mask</p>
+                    <img src="{{ url_for('static', filename='results/mask_' + filename) }}" class="result-image"
+                        style="box-shadow: none; border-radius: 8px;">
+                </div>
+                <div>
+                    <p class="result-label" style="font-size: 0.75rem;">Original Source</p>
+                    <img src="{{ url_for('static', filename='uploads/' + filename) }}" class="result-image"
+                        style="box-shadow: none; border-radius: 8px;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend & Stats Panel -->
+        <div class="glass-morphism result-card" style="padding: 24px; background: rgba(15, 23, 42, 0.4);">
+            <h4 class="result-label">Detected Classes</h4>
+            <div
+                style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 8px;">
+                {% for item in stats %}
+                <div
+                    style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div
+                            style="width: 12px; height: 12px; border-radius: 3px; background: {{ item.color }}; box-shadow: 0 0 10px {{ item.color }}66;">
+                        </div>
+                        <span style="font-weight: 500; font-size: 0.85rem; color: #e2e8f0;">{{ item.name }}</span>
+                    </div>
+                    <span
+                        style="font-family: 'Outfit'; color: var(--accent-color); font-weight: 700; font-size: 0.9rem;">{{
+                        item.pct }}%</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--glass-border);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                    <span style="color: var(--text-secondary); font-size: 0.8rem;">Processing Time</span>
+                    <span style="font-weight: 700; color: #4ade80;">{{ time }} ms</span>
+                </div>
+                <a href="/" class="btn-predict"
+                    style="text-decoration: none; padding: 14px; font-size: 0.95rem; display: block; text-align: center; border-radius: 10px;">New
+                    Analysis</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Custom scrollbar for legend */
+    div::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    div::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    div::-webkit-scrollbar-thumb {
+        background: rgba(99, 102, 241, 0.3);
+        border-radius: 10px;
+    }
+
+    div::-webkit-scrollbar-thumb:hover {
+        background: var(--accent-color);
+    }
+</style>
+{% endblock %}
