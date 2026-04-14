@@ -79,139 +79,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overflow-x:h
 .section-h2{font-size:clamp(2rem,4vw,3.2rem);font-weight:800;letter-spacing:-0.03em;color:#fff;line-height:1.1;margin-bottom:16px;}
 .section-sub{font-size:1rem;color:var(--muted);line-height:1.7;max-width:540px;}
 
-/* USE CASES */
-.cases-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:60px;}
-.case-card{position:relative;border-radius:16px;overflow:hidden;height:420px;cursor:pointer;border:1px solid var(--border);transition:transform 0.4s cubic-bezier(0.16,1,0.3,1),box-shadow 0.4s;}
-.case-card:hover{transform:translateY(-6px) scale(1.01);box-shadow:0 20px 60px rgba(0,0,0,0.6);}
-.case-img{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 0.6s ease;}
-.case-card:hover .case-img{transform:scale(1.06);}
-.case-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 20%,rgba(6,8,16,0.95) 100%);}
-.case-badge{position:absolute;top:16px;right:16px;padding:5px 12px;border-radius:20px;font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;backdrop-filter:blur(10px);}
-.case-body{position:absolute;bottom:0;left:0;right:0;padding:24px;}
-.case-icon{font-size:28px;margin-bottom:10px;display:block;}
-.case-title{font-size:1.2rem;font-weight:700;color:#fff;margin-bottom:8px;letter-spacing:-0.01em;}
-.case-desc{font-size:13px;color:rgba(226,232,240,0.65);line-height:1.6;}
-.case-stats{display:flex;gap:16px;margin-top:14px;opacity:0;transform:translateY(8px);transition:opacity 0.3s,transform 0.3s;}
-.case-card:hover .case-stats{opacity:1;transform:none;}
-.case-stat-item{font-family:var(--mono);font-size:10px;color:var(--cyan);}
-
-/* ── DETECTOR PROMO SECTION (replaces the inline tool) ── */
-.detector-promo{
-  position:relative;z-index:1;
-  padding:80px 40px;
-  background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 50%,var(--bg) 100%);
-}
-.detector-promo-inner{
-  max-width:1100px;margin:0 auto;
-  display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;
-}
-.dp-left .section-tag{margin-bottom:16px;}
-.dp-h{font-size:clamp(2rem,4vw,3rem);font-weight:900;color:#fff;letter-spacing:-0.04em;line-height:1.05;margin-bottom:16px;}
-.dp-h span{background:linear-gradient(135deg,var(--cyan),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.dp-sub{font-size:1rem;color:var(--muted);line-height:1.7;margin-bottom:32px;}
-.dp-feats{display:flex;flex-direction:column;gap:10px;margin-bottom:36px;}
-.dp-feat{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted);}
-.dp-feat-dot{width:6px;height:6px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--teal));flex-shrink:0;}
-.dp-feat strong{color:var(--text);}
-.launch-btn{
-  display:inline-flex;align-items:center;gap:10px;
-  padding:16px 36px;border-radius:12px;
-  background:linear-gradient(135deg,var(--red),var(--red2));
-  color:#fff;font-size:15px;font-weight:700;
-  letter-spacing:0.04em;text-decoration:none;
-  box-shadow:0 0 32px rgba(255,45,45,0.35);
-  transition:all 0.25s;border:none;cursor:pointer;
-}
-.launch-btn:hover{transform:translateY(-2px);box-shadow:0 8px 44px rgba(255,45,45,0.55);}
-.launch-btn-icon{font-size:18px;}
-
-/* Right side: preview card */
-.dp-right{position:relative;}
-.dp-preview{
-  border-radius:16px;overflow:hidden;
-  border:1px solid var(--border);
-  background:var(--panel);
-  box-shadow:0 30px 80px rgba(0,0,0,0.6);
-  position:relative;
-}
-.dp-preview-top{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:12px 18px;border-bottom:1px solid var(--border);
-  background:rgba(0,0,0,0.4);
-}
-.dp-rec{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;}
-.dp-recdot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:badgePulse 1.5s ease infinite;}
-.dp-dots{display:flex;gap:6px;}
-.dp-dot{width:10px;height:10px;border-radius:50%;}
-.dp-canvas-area{
-  height:280px;
-  background:
-    url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=900&q=70') center/cover no-repeat;
-  position:relative;overflow:hidden;
-}
-.dp-canvas-area::after{
-  content:'';position:absolute;inset:0;
-  background:rgba(6,8,16,0.45);
-}
-/* Animated detection boxes on preview */
-.dp-box{
-  position:absolute;z-index:2;
-  border-radius:2px;
-  animation:boxPulse 3s ease-in-out infinite;
-}
-@keyframes boxPulse{0%,100%{opacity:0.7}50%{opacity:1}}
-.dp-box-lbl{
-  position:absolute;top:-20px;left:0;
-  font-family:var(--mono);font-size:9px;font-weight:500;
-  padding:2px 6px;border-radius:2px;background:rgba(6,8,16,0.85);
-  white-space:nowrap;
-}
-/* Corner ticks on boxes */
-.dp-box::before,.dp-box::after{content:'';position:absolute;background:inherit;}
-.dp-toolbar{
-  display:flex;align-items:center;gap:8px;
-  padding:10px 16px;border-top:1px solid var(--border);
-  background:rgba(0,0,0,0.3);
-}
-.dp-tb{width:28px;height:28px;border-radius:6px;background:var(--glass);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);}
-.dp-tb-active{background:rgba(0,212,255,0.12);border-color:rgba(0,212,255,0.35);color:var(--cyan);}
-.dp-corner{position:absolute;z-index:3;pointer-events:none;}
-.dp-corner::before,.dp-corner::after{content:'';position:absolute;background:var(--cyan);}
-.dp-c-tl{top:8px;left:8px;}.dp-c-tl::before{top:0;left:0;width:14px;height:1.5px}.dp-c-tl::after{top:0;left:0;width:1.5px;height:14px}
-.dp-c-tr{top:8px;right:8px;}.dp-c-tr::before{top:0;right:0;width:14px;height:1.5px}.dp-c-tr::after{top:0;right:0;width:1.5px;height:14px}
-.dp-c-bl{bottom:8px;left:8px;}.dp-c-bl::before{bottom:0;left:0;width:14px;height:1.5px}.dp-c-bl::after{bottom:0;left:0;width:1.5px;height:14px}
-.dp-c-br{bottom:8px;right:8px;}.dp-c-br::before{bottom:0;right:0;width:14px;height:1.5px}.dp-c-br::after{bottom:0;right:0;width:1.5px;height:14px}
-/* scan line on preview */
-.dp-scan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.5),transparent);animation:scanDown 4s linear infinite;top:0;z-index:4;}
-
-/* Stats chips on preview */
-.dp-stat-chips{
-  display:flex;gap:8px;padding:10px 16px;
-  border-top:1px solid var(--border);
-  background:rgba(0,0,0,0.2);flex-wrap:wrap;
-}
-.dp-chip{
-  display:flex;align-items:center;gap:6px;
-  padding:5px 10px;border-radius:6px;
-  background:var(--glass);border:1px solid var(--border);
-  font-family:var(--mono);font-size:10px;color:var(--muted);
-}
-.dp-chip-val{color:#fff;font-weight:500;}
-.dp-chip-dot{width:5px;height:5px;border-radius:50%;}
-
-/* Floating badge */
-.dp-float{
-  position:absolute;top:-18px;right:-18px;
-  background:rgba(6,8,16,0.92);border:1px solid var(--border);border-radius:10px;
-  padding:10px 14px;backdrop-filter:blur(12px);
-  font-family:var(--mono);
-  animation:floatBob 4s ease-in-out infinite;
-  z-index:5;
-}
-@keyframes floatBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-.dp-float-val{font-size:1.2rem;font-weight:300;background:linear-gradient(135deg,var(--cyan),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;}
-.dp-float-lbl{font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
-
 /* FEATURES */
 .features{position:relative;z-index:1;padding:100px 40px;background:var(--bg2);}
 .feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:60px;}
@@ -229,6 +96,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overflow-x:h
 .spec-img img{width:100%;height:100%;object-fit:cover;display:block;border-radius:16px;}
 .spec-img-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,212,255,0.1),transparent);border:1px solid rgba(0,212,255,0.2);border-radius:16px;}
 .float-card{position:absolute;background:rgba(6,8,16,0.88);border:1px solid var(--border);border-radius:10px;padding:12px 16px;backdrop-filter:blur(12px);animation:floatBob 4s ease-in-out infinite;}
+@keyframes floatBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .float-card.fc1{top:20px;left:-24px;animation-delay:0s;}
 .float-card.fc2{bottom:40px;right:-24px;animation-delay:1.5s;}
 .float-card.fc3{top:50%;left:-24px;transform:translateY(-50%);animation:none;}
@@ -272,9 +140,9 @@ footer{position:relative;z-index:1;padding:40px;border-top:1px solid var(--borde
 .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.15);transform:scale(0);animation:rippleAnim 0.5s linear;pointer-events:none;}
 @keyframes rippleAnim{to{transform:scale(4);opacity:0}}
 
-@media(max-width:1200px){.cases-grid{grid-template-columns:1fr 1fr;}.feat-grid{grid-template-columns:1fr 1fr;}.specs-inner{gap:40px;}.detector-promo-inner{gap:36px;}}
-@media(max-width:900px){.specs-inner{grid-template-columns:1fr;}.spec-img-col{display:none;}.nav-links{display:none;}.detector-promo-inner{grid-template-columns:1fr;}}
-@media(max-width:600px){.section{padding:60px 20px;}.hero{min-height:100svh;}.nav{padding:0 20px;}.cases-grid{grid-template-columns:1fr;}.feat-grid{grid-template-columns:1fr;}.hero-stats{display:none;}.nav-login{display:none;}.detector-promo{padding:60px 20px;}}
+@media(max-width:1200px){.feat-grid{grid-template-columns:1fr 1fr;}.specs-inner{gap:40px;}}
+@media(max-width:900px){.specs-inner{grid-template-columns:1fr;}.spec-img-col{display:none;}.nav-links{display:none;}}
+@media(max-width:600px){.section{padding:60px 20px;}.hero{min-height:100svh;}.nav{padding:0 20px;}.feat-grid{grid-template-columns:1fr;}.hero-stats{display:none;}.nav-login{display:none;}}
 </style>
 </head>
 <body>
@@ -288,7 +156,6 @@ footer{position:relative;z-index:1;padding:40px;border-top:1px solid var(--borde
     <span class="nav-title">AerialView Pro</span>
   </a>
   <ul class="nav-links">
-    <li><a href="#use-cases">Use Cases</a></li>
     <li><a href="/detector">Detector</a></li>
     <li><a href="#features">Features</a></li>
     <li><a href="#specs">Technology</a></li>
@@ -310,7 +177,7 @@ footer{position:relative;z-index:1;padding:40px;border-top:1px solid var(--borde
     <p class="hero-sub">Multi-sector aerial image analysis at pixel resolution. From disaster relief to precision agriculture — detect, classify, and act in real time.</p>
     <div class="hero-btns">
       <a class="btn-primary" href="/detector">Start Detecting</a>
-      <a class="btn-ghost" href="#use-cases">Explore Use Cases</a>
+      <a class="btn-ghost" href="#features">Explore Features</a>
     </div>
   </div>
   <div class="hero-stats">
@@ -325,77 +192,7 @@ footer{position:relative;z-index:1;padding:40px;border-top:1px solid var(--borde
   </div>
 </section>
 
-<!-- USE CASES -->
-<section class="section" id="use-cases">
-  <div style="max-width:1600px;margin:0 auto;">
-    <div class="reveal">
-      <div class="section-tag">Applications</div>
-      <h2 class="section-h2">Every Sector.<br>Every Mission.</h2>
-      <p class="section-sub">From warzone reconnaissance to crop yield optimization — our AI decodes aerial imagery for the decisions that matter.</p>
-    </div>
-    <div class="cases-grid">
-      <div class="case-card reveal delay1" onclick="location.href='/detector?sector=disaster'">
-        <div class="case-img" style="background-image:url('https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?w=800&q=80')"></div>
-        <div class="case-overlay"></div>
-        <div class="case-badge" style="background:rgba(255,45,45,0.2);border:1px solid rgba(255,45,45,0.4);color:#FF6B6B;">🚨 Critical</div>
-        <div class="case-body"><span class="case-icon">🌊</span><div class="case-title">Disaster Response</div><div class="case-desc">Detect flood extents, structural collapse, and debris fields in minutes — directing first responders with AI-precision maps.</div><div class="case-stats"><div class="case-stat-item">⚡ 3min deploy</div><div class="case-stat-item">📍 5m resolution</div></div></div>
-      </div>
-      <div class="case-card reveal delay2" onclick="location.href='/detector?sector=urban'">
-        <div class="case-img" style="background-image:url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&q=80')"></div>
-        <div class="case-overlay"></div>
-        <div class="case-badge" style="background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.3);color:var(--cyan);">🏙 Urban</div>
-        <div class="case-body"><span class="case-icon">🏢</span><div class="case-title">Urban Intelligence</div><div class="case-desc">Map building density, traffic corridors, green spaces, and infrastructure changes across entire city blocks from a single pass.</div><div class="case-stats"><div class="case-stat-item">🏘 Building detection</div><div class="case-stat-item">🚗 Vehicle count</div></div></div>
-      </div>
-      <div class="case-card reveal delay3" onclick="location.href='/detector?sector=agriculture'">
-        <div class="case-img" style="background-image:url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80')"></div>
-        <div class="case-overlay"></div>
-        <div class="case-badge" style="background:rgba(0,255,179,0.12);border:1px solid rgba(0,255,179,0.3);color:var(--teal);">🌾 Agri</div>
-        <div class="case-body"><span class="case-icon">🌾</span><div class="case-title">Precision Agriculture</div><div class="case-desc">Identify crop health zones, irrigation coverage, weed infestations, and yield prediction at per-plant granularity.</div><div class="case-stats"><div class="case-stat-item">🌱 Per-plant analysis</div><div class="case-stat-item">💧 Irrigation mapping</div></div></div>
-      </div>
-      <div class="case-card reveal delay1" onclick="location.href='/detector?sector=infrastructure'">
-        <div class="case-img" style="background-image:url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80')"></div>
-        <div class="case-overlay"></div>
-        <div class="case-badge" style="background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.3);color:var(--gold);">🛣 Infra</div>
-        <div class="case-body"><span class="case-icon">🌉</span><div class="case-title">Infrastructure Audit</div><div class="case-desc">Monitor road degradation, bridge structural integrity, power line clearances, and rail alignment from UAV surveys.</div><div class="case-stats"><div class="case-stat-item">🔍 Crack detection</div><div class="case-stat-item">⚡ Power grid map</div></div></div>
-      </div>
-      <div class="case-card reveal delay2" onclick="location.href='/detector?sector=forestry'">
-        <div class="case-img" style="background-image:url('https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=80')"></div>
-        <div class="case-overlay"></div>
-        <div class="case-badge" style="background:rgba(0,200,83,0.12);border:1px solid rgba(0,200,83,0.3);color:#00E676;">🌲 Eco</div>
-        <div class="case-body"><span class="case-icon">🌲</span><div class="case-title">Forest Intelligence</div><div class="case-desc">Track deforestation, canopy coverage, wildfire risk zones, and biodiversity corridors with multispectral classification.</div><div class="case-stats"><div class="case-stat-item">🔥 Fire risk zones</div><div class="case-stat-item">🌳 Canopy density</div></div></div>
-      </div>
-      <div class="case-card reveal delay3" onclick="location.href='/detector?sector=mining'">
-        <div class="case-img" style="background-image:url('https://images.unsplash.com/photo-1611348586804-61bf6c080437?w=800&q=80')"></div>
-        <div class="case-overlay"></div>
-        <div class="case-badge" style="background:rgba(180,79,255,0.12);border:1px solid rgba(180,79,255,0.3);color:var(--violet);">⛏ Mining</div>
-        <div class="case-body"><span class="case-icon">⛏</span><div class="case-title">Mining Operations</div><div class="case-desc">Quantify ore stockpiles, track heavy equipment positions, monitor tailings pond expansion and environmental compliance.</div><div class="case-stats"><div class="case-stat-item">📊 Volume estimation</div><div class="case-stat-item">🔬 Mineral mapping</div></div></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- FEATURES -->
-<section class="features" id="features">
-  <div style="max-width:1600px;margin:0 auto;">
-    <div class="reveal" style="text-align:center;">
-      <div class="section-tag" style="justify-content:center;">Capabilities</div>
-      <h2 class="section-h2" style="text-align:center;">Built for Intelligence<br>at Every Altitude</h2>
-    </div>
-    <div class="feat-grid">
-      <div class="feat-card reveal delay1"><div class="feat-icon" style="background:rgba(0,212,255,0.1);">🔬</div><div class="feat-title">12+ Detection Algorithms</div><div class="feat-desc">From color segmentation to superpixel analysis — choose the right tool for every terrain and lighting condition.</div></div>
-      <div class="feat-card reveal delay2"><div class="feat-icon" style="background:rgba(255,45,45,0.1);">⚡</div><div class="feat-title">Sub-Second Processing</div><div class="feat-desc">Optimized pixel-parallel algorithms deliver detection results in under one second — even on full-resolution imagery.</div></div>
-      <div class="feat-card reveal delay3"><div class="feat-icon" style="background:rgba(0,255,179,0.1);">🎯</div><div class="feat-title">Confidence Scoring</div><div class="feat-desc">Every bounding box ships with a color-coded confidence rating so operators can prioritize high-certainty findings instantly.</div></div>
-      <div class="feat-card reveal delay4"><div class="feat-icon" style="background:rgba(255,215,0,0.1);">🌡</div><div class="feat-title">Heatmap Overlays</div><div class="feat-desc">Visualize detection intensity across the full frame with radial heatmap overlays — identify dense object clusters instantly.</div></div>
-      <div class="feat-card reveal delay1"><div class="feat-icon" style="background:rgba(180,79,255,0.1);">⧉</div><div class="feat-title">Before/After Compare</div><div class="feat-desc">Side-by-side split comparison with a draggable slider — verify processing fidelity and overlay accuracy in one view.</div></div>
-      <div class="feat-card reveal delay2"><div class="feat-icon" style="background:rgba(255,107,53,0.1);">💡</div><div class="feat-title">AI Smart Suggestions</div><div class="feat-desc">Sector-aware algorithm recommendations and one-click parameter auto-tuning eliminate trial-and-error setup time.</div></div>
-      <div class="feat-card reveal delay3"><div class="feat-icon" style="background:rgba(0,212,255,0.1);">📊</div><div class="feat-title">Live Analytics</div><div class="feat-desc">Animated counters, distribution bar charts, and detection history log — full operational awareness at a glance.</div></div>
-      <div class="feat-card reveal delay4"><div class="feat-icon" style="background:rgba(0,255,179,0.1);">🔒</div><div class="feat-title">Export & Archive</div><div class="feat-desc">JSON export with full detection metadata, timestamps, and sector tags. Undo/redo history preserves every session state.</div></div>
-    </div>
-  </div>
-</section>
-
-<!-- TECH SPECS -->
+<!-- TECH SPECS — Technology pehle -->
 <section class="specs" id="specs">
   <div style="max-width:1600px;margin:0 auto;">
     <div class="specs-inner">
@@ -423,6 +220,25 @@ footer{position:relative;z-index:1;padding:40px;border-top:1px solid var(--borde
   </div>
 </section>
 
+<!-- FEATURES — Capabilities baad mein -->
+<section class="features" id="features">
+  <div style="max-width:1600px;margin:0 auto;">
+    <div class="reveal" style="text-align:center;">
+      <div class="section-tag" style="justify-content:center;">Capabilities</div>
+      <h2 class="section-h2" style="text-align:center;">Built for Intelligence<br>at Every Altitude</h2>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card reveal delay1"><div class="feat-icon" style="background:rgba(0,212,255,0.1);">🔬</div><div class="feat-title">12+ Detection Algorithms</div><div class="feat-desc">From color segmentation to superpixel analysis — choose the right tool for every terrain and lighting condition.</div></div>
+      <div class="feat-card reveal delay2"><div class="feat-icon" style="background:rgba(255,45,45,0.1);">⚡</div><div class="feat-title">Sub-Second Processing</div><div class="feat-desc">Optimized pixel-parallel algorithms deliver detection results in under one second — even on full-resolution imagery.</div></div>
+      <div class="feat-card reveal delay3"><div class="feat-icon" style="background:rgba(0,255,179,0.1);">🎯</div><div class="feat-title">Confidence Scoring</div><div class="feat-desc">Every bounding box ships with a color-coded confidence rating so operators can prioritize high-certainty findings instantly.</div></div>
+      <div class="feat-card reveal delay4"><div class="feat-icon" style="background:rgba(255,215,0,0.1);">🌡</div><div class="feat-title">Heatmap Overlays</div><div class="feat-desc">Visualize detection intensity across the full frame with radial heatmap overlays — identify dense object clusters instantly.</div></div>
+      <div class="feat-card reveal delay1"><div class="feat-icon" style="background:rgba(180,79,255,0.1);">⧉</div><div class="feat-title">Before/After Compare</div><div class="feat-desc">Side-by-side split comparison with a draggable slider — verify processing fidelity and overlay accuracy in one view.</div></div>
+      <div class="feat-card reveal delay2"><div class="feat-icon" style="background:rgba(255,107,53,0.1);">💡</div><div class="feat-title">AI Smart Suggestions</div><div class="feat-desc">Sector-aware algorithm recommendations and one-click parameter auto-tuning eliminate trial-and-error setup time.</div></div>
+      <div class="feat-card reveal delay3"><div class="feat-icon" style="background:rgba(0,212,255,0.1);">📊</div><div class="feat-title">Live Analytics</div><div class="feat-desc">Animated counters, distribution bar charts, and detection history log — full operational awareness at a glance.</div></div>
+      <div class="feat-card reveal delay4"><div class="feat-icon" style="background:rgba(0,255,179,0.1);">🔒</div><div class="feat-title">Export & Archive</div><div class="feat-desc">JSON export with full detection metadata, timestamps, and sector tags. Undo/redo history preserves every session state.</div></div>
+    </div>
+  </div>
+</section>
 
 <!-- FOOTER -->
 <footer>

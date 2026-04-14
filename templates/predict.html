@@ -1,85 +1,357 @@
 {% extends "base.html" %}
-
 {% block content %}
-<section class="result-container" style="padding-top: 100px;">
-    <div class="glass-morphism result-card" style="text-align: left; padding: 24px; margin-bottom: 24px;">
-        <h2 style="font-size: 1.8rem; margin-bottom: 4px;">Analysis Results</h2>
-        <p style="color: var(--text-secondary);">Pixel-level segmentation with automated land cover stats.</p>
-    </div>
-
-    <div class="result-grid" style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 24px;">
-        <!-- Image Panel -->
-        <div class="glass-morphism result-card" style="padding: 24px;">
-            <h4 class="result-label">Blended AI Overlay</h4>
-            <div style="border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border);">
-                <img src="{{ url_for('static', filename='results/overlay_' + filename) }}" class="result-image"
-                    alt="AI Overlay">
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px;">
-                <div>
-                    <p class="result-label" style="font-size: 0.75rem;">Raw Mask</p>
-                    <img src="{{ url_for('static', filename='results/mask_' + filename) }}" class="result-image"
-                        style="box-shadow: none; border-radius: 8px;">
-                </div>
-                <div>
-                    <p class="result-label" style="font-size: 0.75rem;">Original Source</p>
-                    <img src="{{ url_for('static', filename='uploads/' + filename) }}" class="result-image"
-                        style="box-shadow: none; border-radius: 8px;">
-                </div>
-            </div>
-        </div>
-
-        <!-- Legend & Stats Panel -->
-        <div class="glass-morphism result-card" style="padding: 24px; background: rgba(15, 23, 42, 0.4);">
-            <h4 class="result-label">Detected Classes</h4>
-            <div
-                style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 8px;">
-                {% for item in stats %}
-                <div
-                    style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div
-                            style="width: 12px; height: 12px; border-radius: 3px; background: {{ item.color }}; box-shadow: 0 0 10px {{ item.color }}66;">
-                        </div>
-                        <span style="font-weight: 500; font-size: 0.85rem; color: #e2e8f0;">{{ item.name }}</span>
-                    </div>
-                    <span
-                        style="font-family: 'Outfit'; color: var(--accent-color); font-weight: 700; font-size: 0.9rem;">{{
-                        item.pct }}%</span>
-                </div>
-                {% endfor %}
-            </div>
-
-            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--glass-border);">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                    <span style="color: var(--text-secondary); font-size: 0.8rem;">Processing Time</span>
-                    <span style="font-weight: 700; color: #4ade80;">{{ time }} ms</span>
-                </div>
-                <a href="/" class="btn-predict"
-                    style="text-decoration: none; padding: 14px; font-size: 0.95rem; display: block; text-align: center; border-radius: 10px;">New
-                    Analysis</a>
-            </div>
-        </div>
-    </div>
-</section>
 
 <style>
-    /* Custom scrollbar for legend */
-    div::-webkit-scrollbar {
-        width: 5px;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap');
 
-    div::-webkit-scrollbar-track {
-        background: transparent;
-    }
+:root {
+  --bg-base:        #070b14;
+  --glass-bg:       rgba(13, 21, 37, 0.72);
+  --glass-border:   rgba(99, 179, 237, 0.10);
+  --accent-color:   #38bdf8;
+  --accent-glow:    rgba(56, 189, 248, 0.25);
+  --accent-soft:    rgba(56, 189, 248, 0.08);
+  --success:        #4ade80;
+  --text-primary:   #e2eeff;
+  --text-secondary: #7a9ab8;
+  --text-muted:     #3e5a75;
+  --radius-md:      14px;
+  --radius-lg:      22px;
+  --shadow-card:    0 8px 40px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.04) inset;
+  --transition:     0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-    div::-webkit-scrollbar-thumb {
-        background: rgba(99, 102, 241, 0.3);
-        border-radius: 10px;
-    }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    div::-webkit-scrollbar-thumb:hover {
-        background: var(--accent-color);
-    }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(56,189,248,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56,189,248,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: -160px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 500px;
+  background: radial-gradient(ellipse at center, rgba(56,189,248,0.09) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Result Container ─────────────────────────────────── */
+.result-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 100px 24px 60px;
+}
+
+/* ── Glass Card ───────────────────────────────────────── */
+.result-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 28px;
+  position: relative;
+  animation: fadeUp 0.5s ease both;
+}
+
+.result-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* ── Header Card ──────────────────────────────────────── */
+.result-header {
+  margin-bottom: 24px;
+}
+
+.result-header h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.result-header p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* ── Grid ─────────────────────────────────────────────── */
+.result-grid {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr;
+  gap: 24px;
+}
+
+@media (max-width: 860px) {
+  .result-grid { grid-template-columns: 1fr; }
+}
+
+.result-grid .result-card:nth-child(2) {
+  animation-delay: 0.12s;
+  background: rgba(7, 13, 28, 0.65);
+}
+
+/* ── Labels ───────────────────────────────────────────── */
+.result-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  display: block;
+}
+
+/* ── Images ───────────────────────────────────────────── */
+.result-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-md);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.result-image:hover {
+  transform: scale(1.015);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+}
+
+.overlay-wrapper {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  margin-bottom: 24px;
+}
+
+.sub-images {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ── Stat Rows ────────────────────────────────────────── */
+.stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.045);
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.stat-row:hover {
+  background: rgba(56,189,248,0.06);
+  border-color: rgba(56,189,248,0.15);
+}
+
+.stat-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.stat-name {
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.stat-pct {
+  font-family: 'DM Mono', monospace;
+  color: var(--accent-color);
+  font-weight: 500;
+  font-size: 0.88rem;
+}
+
+/* ── Footer / Timing ──────────────────────────────────── */
+.stats-footer {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.timing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.timing-label {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.timing-value {
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  font-size: 0.88rem;
+  color: var(--success);
+  background: rgba(74,222,128,0.08);
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(74,222,128,0.15);
+}
+
+/* ── Button ───────────────────────────────────────────── */
+.btn-predict {
+  display: block;
+  width: 100%;
+  padding: 15px 24px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #070b14;
+  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  transition: filter var(--transition), transform var(--transition), box-shadow var(--transition);
+  box-shadow: 0 4px 20px rgba(56,189,248,0.30);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-predict::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(255,255,255,0.12), transparent);
+  pointer-events: none;
+}
+
+.btn-predict:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 32px rgba(56,189,248,0.45);
+}
+
+.btn-predict:active {
+  transform: translateY(0);
+  filter: brightness(0.96);
+}
+
+/* ── Animations ───────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Scrollbar ────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.25); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
 </style>
+
+<section class="result-container">
+
+  <!-- Header -->
+  <div class="result-card result-header">
+    <h2>Analysis Results</h2>
+    <p>Pixel-level segmentation with automated land cover stats.</p>
+  </div>
+
+  <!-- Main Grid -->
+  <div class="result-grid">
+
+    <!-- Image Panel -->
+    <div class="result-card">
+      <span class="result-label">Blended AI Overlay</span>
+      <div class="overlay-wrapper">
+        <img src="{{ url_for('static', filename='results/overlay_' + filename) }}"
+             class="result-image" alt="AI Overlay">
+      </div>
+      <div class="sub-images">
+        <div>
+          <span class="result-label">Raw Mask</span>
+          <img src="{{ url_for('static', filename='results/mask_' + filename) }}"
+               class="result-image">
+        </div>
+        <div>
+          <span class="result-label">Original Source</span>
+          <img src="{{ url_for('static', filename='uploads/' + filename) }}"
+               class="result-image">
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Panel -->
+    <div class="result-card">
+      <span class="result-label">Detected Classes</span>
+
+      <div class="stats-list">
+        {% for item in stats %}
+        <div class="stat-row">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="stat-dot"
+                 style="background: {{ item.color }}; box-shadow: 0 0 10px {{ item.color }}66;">
+            </div>
+            <span class="stat-name">{{ item.name }}</span>
+          </div>
+          <span class="stat-pct">{{ item.pct }}%</span>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="stats-footer">
+        <div class="timing-row">
+          <span class="timing-label">Processing Time</span>
+          <span class="timing-value">{{ time }} ms</span>
+        </div>
+        <a href="/" class="btn-predict">New Analysis</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
 {% endblock %}
