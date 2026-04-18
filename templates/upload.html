@@ -1,282 +1,1257 @@
-{% extends "base.html" %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap');
-
-:root {
-  --bg-base:        #070b14;
-  --bg-surface:     #0d1525;
-  --glass-bg:       rgba(13, 21, 37, 0.72);
-  --glass-border:   rgba(99, 179, 237, 0.10);
-  --accent-color:   #38bdf8;
-  --accent-glow:    rgba(56, 189, 248, 0.25);
-  --accent-soft:    rgba(56, 189, 248, 0.08);
-  --text-primary:   #e2eeff;
-  --text-secondary: #7a9ab8;
-  --text-muted:     #3e5a75;
-  --radius-md:      14px;
-  --radius-lg:      22px;
-  --shadow-card:    0 8px 40px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.04) inset;
-  --transition:     0.22s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'DM Sans', sans-serif;
-  background-color: var(--bg-base);
-  color: var(--text-primary);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(56,189,248,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56,189,248,0.025) 1px, transparent 1px);
-  background-size: 48px 48px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-body::after {
-  content: '';
-  position: fixed;
-  top: -160px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 900px;
-  height: 500px;
-  background: radial-gradient(ellipse at center, rgba(56,189,248,0.09) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.hero-section {
-  position: relative;
-  z-index: 1;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 100px 24px 60px;
-  text-align: center;
-}
-
-.hero-title {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: clamp(2rem, 5vw, 3.4rem);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-  margin-bottom: 20px;
-  animation: fadeUp 0.7s ease both;
-}
-
-.hero-subtitle {
-  font-size: 1.02rem;
-  color: var(--text-secondary);
-  max-width: 560px;
-  line-height: 1.75;
-  margin-bottom: 44px;
-  font-weight: 300;
-  animation: fadeUp 0.7s 0.1s ease both;
-}
-
-.upload-card {
-  width: 100%;
-  max-width: 520px;
-  padding: 40px 36px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  position: relative;
-  animation: fadeUp 0.7s 0.2s ease both;
-  transition: box-shadow var(--transition), border-color var(--transition);
-}
-
-.upload-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%);
-  pointer-events: none;
-}
-
-.upload-card:hover {
-  border-color: rgba(56,189,248,0.20);
-  box-shadow: var(--shadow-card), 0 0 60px rgba(56,189,248,0.08);
-}
-
-.file-input-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 36px 20px;
-  border: 2px dashed rgba(56,189,248,0.20);
-  border-radius: var(--radius-md);
-  background: var(--accent-soft);
-  cursor: pointer;
-  transition: border-color var(--transition), background var(--transition);
-  margin-bottom: 24px;
-  position: relative;
-}
-
-.file-input-wrapper:hover {
-  border-color: rgba(56,189,248,0.45);
-  background: rgba(56,189,248,0.12);
-}
-
-.file-input-wrapper .upload-icon {
-  font-size: 2.8rem;
-  color: var(--accent-color);
-  filter: drop-shadow(0 0 12px var(--accent-glow));
-  margin-bottom: 16px;
-}
-
-.file-input-wrapper h3 {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 1.05rem;
-  color: var(--text-primary);
-  margin-bottom: 6px;
-}
-
-.file-input-wrapper p {
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-}
-
-.file-input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
-  width: 100%;
-  height: 100%;
-}
-
-#filePreview {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-#fileName {
-  font-family: 'DM Mono', monospace;
-  font-size: 0.82rem;
-  color: var(--accent-color);
-  background: var(--accent-soft);
-  padding: 8px 16px;
-  border-radius: 6px;
-  display: inline-block;
-}
-
-.btn-predict {
-  display: block;
-  width: 100%;
-  padding: 15px 24px;
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #070b14;
-  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: filter var(--transition), transform var(--transition), box-shadow var(--transition);
-  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.30);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-predict::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(rgba(255,255,255,0.12), transparent);
-  pointer-events: none;
-}
-
-.btn-predict:hover {
-  filter: brightness(1.12);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 32px rgba(56, 189, 248, 0.45);
-}
-
-.btn-predict:active {
-  transform: translateY(0);
-  filter: brightness(0.96);
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(22px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.25); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
-</style>
-
-<section class="hero-section">
-
-  <h1 class="hero-title">
-    Aerial Image Analysis<br>
-    with Advanced CNN
-  </h1>
-
-  <p class="hero-subtitle">
-    A state-of-the-art pixel-wise segmentation model designed to solve the
-    &ldquo;Tiny Object Problem&rdquo; in high-resolution aerial imagery.
-    Detect roads, buildings, and vegetation with precision.
-  </p>
-
-  <div class="upload-card">
-    <form action="/predict" method="POST" enctype="multipart/form-data">
-
-      <div class="file-input-wrapper">
-        <i class="fas fa-cloud-upload-alt upload-icon"></i>
-        <h3>Upload Aerial Image</h3>
-        <p>Drag &amp; Drop or Click to browse (JPG, PNG)</p>
-        <input type="file" name="file" class="file-input" required id="fileInput">
-      </div>
-
-      <div id="filePreview" style="display: none;">
-        <p id="fileName"></p>
-      </div>
-
-      <button type="submit" class="btn-predict">
-        <i class="fas fa-microchip" style="margin-right: 8px;"></i>
-        Run Prediction Model
-      </button>
-
-    </form>
-  </div>
-
-</section>
-
-<script>
-  document.getElementById('fileInput').onchange = function () {
-    const file = this.files[0];
-    if (file) {
-      document.getElementById('filePreview').style.display = 'block';
-      document.getElementById('fileName').innerHTML =
-        `<i class="fas fa-file-image"></i> Selected: ${file.name}`;
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Image — AerialView Detector Pro</title>
+  <meta name="description"
+    content="Upload your aerial image for AI-powered pixel-level object detection. Supports JPG, PNG, TIFF formats.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --red: #FF2D2D;
+      --red2: #FF6B35;
+      --cyan: #00D4FF;
+      --teal: #00FFB3;
+      --gold: #FFD700;
+      --violet: #B44FFF;
+      --bg: #060810;
+      --bg2: #0C0F1A;
+      --bg3: #121626;
+      --panel: #0F1320;
+      --glass: rgba(255, 255, 255, 0.04);
+      --glass2: rgba(255, 255, 255, 0.08);
+      --border: rgba(255, 255, 255, 0.08);
+      --border2: rgba(255, 255, 255, 0.14);
+      --text: #E2E8F0;
+      --muted: #64748B;
+      --faint: #2A3042;
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
     }
-  };
-</script>
 
-{% endblock %}
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    ::selection {
+      background: rgba(0, 212, 255, 0.25);
+      color: #fff;
+    }
+
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 212, 255, 0.3);
+      border-radius: 2px;
+    }
+
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* NAV */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      transition: background 0.4s, border-color 0.4s;
+    }
+
+    .nav.scrolled {
+      background: rgba(6, 8, 16, 0.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .nav-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--red), var(--red2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      box-shadow: 0 0 20px rgba(255, 45, 45, 0.4);
+      animation: badgePulse 3s ease-in-out infinite;
+    }
+
+    @keyframes badgePulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(255, 45, 45, 0.4)
+      }
+
+      50% {
+        box-shadow: 0 0 35px rgba(255, 45, 45, 0.7)
+      }
+    }
+
+    .nav-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: #fff;
+    }
+
+    .nav-links a.active {
+      color: var(--cyan);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-login {
+      padding: 8px 18px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .nav-login:hover {
+      background: var(--glass2);
+      border-color: rgba(0, 212, 255, 0.4);
+      color: #fff;
+    }
+
+    .nav-cta {
+      padding: 8px 20px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--red), var(--red2));
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(255, 45, 45, 0.3);
+      transition: all 0.2s;
+    }
+
+    .nav-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 28px rgba(255, 45, 45, 0.5);
+    }
+
+    /* SCAN FX */
+    .page-scan {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .page-scan::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.5), transparent);
+      animation: scanDown 8s linear infinite;
+      top: -2px;
+    }
+
+    @keyframes scanDown {
+      0% {
+        top: -2px
+      }
+
+      100% {
+        top: 100%
+      }
+    }
+
+    .page-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background-image: linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.3) 30%, rgba(0, 0, 0, 0.3) 70%, transparent 100%);
+    }
+
+    /* GLOW ORB */
+    .glow-orb {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+    }
+
+    .orb1 {
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--cyan), transparent 70%);
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .orb2 {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, var(--red), transparent 70%);
+      bottom: 0;
+      right: -100px;
+    }
+
+    /* MAIN LAYOUT */
+    .upload-page {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 100px 24px 60px;
+    }
+
+    .upload-container {
+      width: 100%;
+      max-width: 980px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    /* LEFT PANEL */
+    .upload-info {
+      padding-top: 20px;
+    }
+
+    .info-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(0, 212, 255, 0.08);
+      border: 1px solid rgba(0, 212, 255, 0.25);
+      border-radius: 20px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--cyan);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      animation: fadeUp 0.8s ease 0.2s both;
+    }
+
+    .info-tag::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: badgePulse 1.5s ease infinite;
+    }
+
+    .info-h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      color: #fff;
+      margin-bottom: 18px;
+      animation: fadeUp 0.8s ease 0.35s both;
+    }
+
+    .info-h1 span {
+      background: linear-gradient(135deg, var(--cyan), var(--teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .info-sub {
+      font-size: 0.97rem;
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 36px;
+      animation: fadeUp 0.8s ease 0.5s both;
+    }
+
+    /* STEP LIST */
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      animation: fadeUp 0.8s ease 0.65s both;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--glass);
+      transition: all 0.25s;
+    }
+
+    .step-item:hover {
+      border-color: rgba(0, 212, 255, 0.2);
+      background: var(--glass2);
+    }
+
+    .step-num {
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      font-weight: 300;
+      background: linear-gradient(135deg, var(--cyan), var(--teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      flex-shrink: 0;
+      min-width: 30px;
+      padding-top: 1px;
+    }
+
+    .step-text-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+
+    .step-text-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* FORMAT BADGES */
+    .format-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+      animation: fadeUp 0.8s ease 0.8s both;
+    }
+
+    .fmt-badge {
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--glass);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      transition: all 0.2s;
+    }
+
+    .fmt-badge:hover {
+      border-color: rgba(0, 212, 255, 0.3);
+      color: var(--cyan);
+    }
+
+    /* RIGHT PANEL — UPLOAD CARD */
+    .upload-card {
+      background: rgba(12, 15, 26, 0.75);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 32px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.8s ease 0.3s both;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .upload-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .upload-card:hover {
+      border-color: rgba(0, 212, 255, 0.18);
+      box-shadow: 0 0 60px rgba(0, 212, 255, 0.06), 0 24px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-header {
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .card-sub {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    /* DROP ZONE */
+    .drop-zone {
+      position: relative;
+      border: 2px dashed rgba(0, 212, 255, 0.2);
+      border-radius: 14px;
+      background: rgba(0, 212, 255, 0.03);
+      padding: 44px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      min-height: 220px;
+      overflow: hidden;
+    }
+
+    .drop-zone.dragover,
+    .drop-zone:hover {
+      border-color: rgba(0, 212, 255, 0.5);
+      background: rgba(0, 212, 255, 0.07);
+      box-shadow: 0 0 30px rgba(0, 212, 255, 0.08) inset;
+    }
+
+    .drop-zone.has-file {
+      border-color: rgba(0, 255, 179, 0.4);
+      background: rgba(0, 255, 179, 0.05);
+    }
+
+    #fileInput {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .dz-icon-wrap {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 255, 179, 0.08));
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+      font-size: 26px;
+      transition: all 0.3s;
+    }
+
+    .drop-zone:hover .dz-icon-wrap,
+    .drop-zone.dragover .dz-icon-wrap {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.25), rgba(0, 255, 179, 0.15));
+      transform: scale(1.05);
+      box-shadow: 0 0 24px rgba(0, 212, 255, 0.2);
+    }
+
+    .dz-icon {
+      color: var(--cyan);
+      filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.5));
+    }
+
+    .dz-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .dz-hint {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .dz-hint span {
+      color: var(--cyan);
+      font-weight: 500;
+    }
+
+    /* CORNER BRACKETS */
+    .drop-zone::after {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border-radius: 10px;
+      background:
+        linear-gradient(var(--cyan), var(--cyan)) top left / 12px 2px no-repeat,
+        linear-gradient(var(--cyan), var(--cyan)) top left / 2px 12px no-repeat,
+        linear-gradient(var(--cyan), var(--cyan)) top right / 12px 2px no-repeat,
+        linear-gradient(var(--cyan), var(--cyan)) top right / 2px 12px no-repeat,
+        linear-gradient(var(--cyan), var(--cyan)) bottom left / 12px 2px no-repeat,
+        linear-gradient(var(--cyan), var(--cyan)) bottom left / 2px 12px no-repeat,
+        linear-gradient(var(--cyan), var(--cyan)) bottom right / 12px 2px no-repeat,
+        linear-gradient(var(--cyan), var(--cyan)) bottom right / 2px 12px no-repeat;
+      opacity: 0.25;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .drop-zone:hover::after,
+    .drop-zone.dragover::after {
+      opacity: 0.6;
+    }
+
+    /* FILE PREVIEW */
+    #filePreview {
+      display: none;
+      margin-top: 20px;
+      padding: 14px 16px;
+      background: var(--glass);
+      border: 1px solid rgba(0, 255, 179, 0.2);
+      border-radius: 10px;
+    }
+
+    .preview-inner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .preview-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      flex-shrink: 0;
+      display: none;
+    }
+
+    .preview-thumb.show {
+      display: block;
+    }
+
+    .preview-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      background: rgba(0, 255, 179, 0.08);
+      border: 1px solid rgba(0, 255, 179, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .preview-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .preview-name {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: #fff;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+
+    .preview-meta {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .preview-clear {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px;
+      transition: color 0.2s;
+      flex-shrink: 0;
+    }
+
+    .preview-clear:hover {
+      color: var(--red);
+    }
+
+    /* DIVIDER */
+    .card-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 24px 0;
+    }
+
+    /* SUBMIT BUTTON */
+    .btn-submit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 16px 24px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--red), var(--red2));
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(255, 45, 45, 0.3);
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-submit::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(rgba(255, 255, 255, 0.1), transparent);
+      pointer-events: none;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 40px rgba(255, 45, 45, 0.5), 0 0 0 1px rgba(255, 107, 53, 0.3);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+      filter: brightness(0.92);
+    }
+
+    .btn-submit i {
+      font-size: 15px;
+    }
+
+    /* URL INPUT ROW */
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0 0;
+    }
+
+    .or-divider span {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+
+    .or-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .url-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .url-input {
+      flex: 1;
+      padding: 11px 14px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .url-input::placeholder {
+      color: var(--muted);
+    }
+
+    .url-input:focus {
+      border-color: rgba(0, 212, 255, 0.4);
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.08);
+    }
+
+    .btn-url {
+      padding: 11px 18px;
+      border-radius: 8px;
+      background: var(--glass2);
+      border: 1px solid var(--border2);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-url:hover {
+      border-color: rgba(0, 212, 255, 0.4);
+      background: rgba(0, 212, 255, 0.1);
+    }
+
+    /* BOTTOM STATS */
+    .card-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 24px;
+    }
+
+    .cs-item {
+      background: var(--bg2);
+      padding: 14px 10px;
+      text-align: center;
+    }
+
+    .cs-val {
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      font-weight: 300;
+      background: linear-gradient(135deg, var(--cyan), var(--teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .cs-label {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 4px;
+      font-family: var(--mono);
+    }
+
+    /* LOADING OVERLAY */
+    .loading-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(6, 8, 16, 0.85);
+      backdrop-filter: blur(8px);
+      border-radius: 20px;
+      z-index: 10;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .loading-overlay.show {
+      display: flex;
+    }
+
+    .loader-ring {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      border-top-color: var(--cyan);
+      border-right-color: var(--teal);
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .loader-text {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--cyan);
+      letter-spacing: 0.08em;
+    }
+
+    /* FOOTER */
+    footer {
+      position: relative;
+      z-index: 2;
+      padding: 32px 40px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: #fff;
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(0);
+      animation: rippleAnim 0.5s linear;
+      pointer-events: none;
+    }
+
+    @keyframes rippleAnim {
+      to {
+        transform: scale(4);
+        opacity: 0
+      }
+    }
+
+    /* RESPONSIVE */
+    @media(max-width:900px) {
+      .upload-container {
+        grid-template-columns: 1fr;
+      }
+
+      .upload-info {
+        text-align: center;
+      }
+
+      .format-row {
+        justify-content: center;
+      }
+
+      .nav-links {
+        display: none;
+      }
+    }
+
+    @media(max-width:600px) {
+      .nav {
+        padding: 0 20px;
+      }
+
+      .nav-login {
+        display: none;
+      }
+
+      .upload-page {
+        padding: 80px 16px 40px;
+      }
+
+      .upload-card {
+        padding: 24px 20px;
+      }
+
+      footer {
+        padding: 24px 20px;
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <canvas id="bg-canvas"></canvas>
+  <div class="page-scan"></div>
+  <div class="page-grid"></div>
+  <div class="glow-orb orb1"></div>
+  <div class="glow-orb orb2"></div>
+
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <a class="nav-brand" href="/">
+      <div class="nav-badge">🛰</div>
+      <span class="nav-title">AerialView Pro</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="/detector">Detector</a></li>
+      <li><a href="/#features">Features</a></li>
+      <li><a href="/#specs">Technology</a></li>
+      <li><a href="/upload" class="active">Upload</a></li>
+    </ul>
+    <div class="nav-right">
+      <a class="nav-login" href="/login">Log In</a>
+      <a class="nav-cta" href="/register">Sign Up Free</a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="upload-page">
+    <div class="upload-container">
+
+      <!-- LEFT: INFO -->
+      <div class="upload-info">
+        <div class="info-tag">AI Image Analysis</div>
+        <h1 class="info-h1">Upload &amp; Detect<br><span>From Above</span></h1>
+        <p class="info-sub">Feed your aerial imagery into our pixel-level segmentation engine. Our CNN detects roads,
+          buildings, vegetation, vehicles and more — in under one second.</p>
+
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-num">01</div>
+            <div>
+              <div class="step-text-title">Upload Your Image</div>
+              <div class="step-text-desc">Drag &amp; drop or click to browse. Supports JPG, PNG, and TIFF aerial imagery
+                up to 20 MB.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">02</div>
+            <div>
+              <div class="step-text-title">AI Model Processes</div>
+              <div class="step-text-desc">Our 12-algorithm ensemble runs multi-spectral segmentation and NMS on every
+                pixel layer.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">03</div>
+            <div>
+              <div class="step-text-title">View Detection Results</div>
+              <div class="step-text-desc">Receive annotated output with bounding boxes, confidence scores, heatmaps, and
+                a JSON export.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="format-row">
+          <span class="fmt-badge">JPG</span>
+          <span class="fmt-badge">PNG</span>
+          <span class="fmt-badge">TIFF</span>
+          <span class="fmt-badge">WEBP</span>
+          <span class="fmt-badge">Max 20 MB</span>
+        </div>
+      </div>
+
+      <!-- RIGHT: UPLOAD CARD -->
+      <div class="upload-card" id="uploadCard">
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+          <div class="loader-ring"></div>
+          <span class="loader-text">// Running prediction model…</span>
+        </div>
+
+        <div class="card-header">
+          <div class="card-title">Aerial Image Upload</div>
+          <div class="card-sub">// drag_and_drop or click_to_browse</div>
+        </div>
+
+        <form action="/predict" method="POST" enctype="multipart/form-data" id="uploadForm">
+
+          <div class="drop-zone" id="dropZone">
+            <input type="file" name="file" id="fileInput" accept="image/*">
+            <div class="dz-icon-wrap">
+              <i class="fas fa-satellite-dish dz-icon"></i>
+            </div>
+            <div class="dz-title">Drop aerial image here</div>
+            <div class="dz-hint">or <span>click to browse files</span><br>JPG, PNG, TIFF · max 20 MB</div>
+          </div>
+
+          <!-- File Preview -->
+          <div id="filePreview">
+            <div class="preview-inner">
+              <img class="preview-thumb" id="previewThumb" src="" alt="preview">
+              <div class="preview-icon" id="previewIcon"><i class="fas fa-file-image" style="color:var(--teal);"></i>
+              </div>
+              <div class="preview-info">
+                <div class="preview-name" id="previewName"></div>
+                <div class="preview-meta" id="previewMeta"></div>
+              </div>
+              <button type="button" class="preview-clear" id="clearBtn" title="Remove file">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="card-divider"></div>
+
+          <button type="submit" class="btn-submit" id="submitBtn">
+            <i class="fas fa-microchip"></i>
+            Run Prediction Model
+          </button>
+
+        </form>
+
+        <!-- URL Option -->
+        <div class="or-divider">
+          <div class="or-line"></div>
+          <span>OR USE IMAGE URL</span>
+          <div class="or-line"></div>
+        </div>
+        <form action="/predict_url" method="POST" id="urlForm">
+          <div class="url-row">
+            <input type="url" name="image_url" class="url-input" placeholder="https://example.com/aerial.jpg"
+              id="urlInput">
+            <button type="submit" class="btn-url">Fetch</button>
+          </div>
+        </form>
+
+        <!-- Bottom Stats -->
+        <div class="card-stats">
+          <div class="cs-item">
+            <div class="cs-val">99.4%</div>
+            <div class="cs-label">Accuracy</div>
+          </div>
+          <div class="cs-item">
+            <div class="cs-val">&lt;1s</div>
+            <div class="cs-label">Process Time</div>
+          </div>
+          <div class="cs-item">
+            <div class="cs-val">12+</div>
+            <div class="cs-label">Algorithms</div>
+          </div>
+        </div>
+
+      </div><!-- /upload-card -->
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-brand">
+      <div class="nav-badge" style="width:28px;height:28px;font-size:13px;">🛰</div>
+      <span style="font-size:13px;font-weight:600;color:#fff;">AerialView Pro</span>
+    </div>
+    <span class="footer-copy">© 2024 AerialView Detector Pro · Multi-Sector Edition</span>
+    <div class="footer-links">
+      <a href="#">Documentation</a>
+      <a href="#">API</a>
+      <a href="/login">Login</a>
+      <a href="/register">Register</a>
+    </div>
+  </footer>
+
+  <script>
+    /* ── PARTICLE CANVAS ── */
+    (function () {
+      const c = document.getElementById('bg-canvas'), ctx = c.getContext('2d');
+      function resize() { c.width = window.innerWidth; c.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      const pts = Array.from({ length: 70 }, () => ({
+        x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight,
+        r: Math.random() * 1.5 + 0.3, vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25,
+        a: Math.random() * 0.35 + 0.05, hue: Math.random() < 0.6 ? 185 : Math.random() < 0.5 ? 10 : 145
+      }));
+      function draw() {
+        ctx.clearRect(0, 0, c.width, c.height);
+        pts.forEach(p => {
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${p.hue},90%,65%,${p.a})`; ctx.fill();
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > c.width) p.vx *= -1; if (p.y < 0 || p.y > c.height) p.vy *= -1;
+        });
+        for (let i = 0; i < pts.length; i++)for (let j = i + 1; j < pts.length; j++) {
+          const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y, d = Math.sqrt(dx * dx + dy * dy);
+          if (d < 90) { ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.strokeStyle = `rgba(0,212,255,${0.06 * (1 - d / 90)})`; ctx.lineWidth = 0.4; ctx.stroke(); }
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    /* ── NAV SCROLL ── */
+    window.addEventListener('scroll', () => document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 60));
+
+    /* ── FILE INPUT LOGIC ── */
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const filePreview = document.getElementById('filePreview');
+    const previewName = document.getElementById('previewName');
+    const previewMeta = document.getElementById('previewMeta');
+    const previewThumb = document.getElementById('previewThumb');
+    const previewIcon = document.getElementById('previewIcon');
+    const clearBtn = document.getElementById('clearBtn');
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + 'B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + 'KB';
+      return (bytes / 1048576).toFixed(1) + 'MB';
+    }
+
+    function showFile(file) {
+      previewName.textContent = file.name;
+      previewMeta.textContent = `${formatSize(file.size)} · ${file.type || 'image/unknown'}`;
+      filePreview.style.display = 'block';
+      dropZone.classList.add('has-file');
+
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          previewThumb.src = e.target.result;
+          previewThumb.classList.add('show');
+          previewIcon.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function clearFile() {
+      fileInput.value = '';
+      filePreview.style.display = 'none';
+      dropZone.classList.remove('has-file');
+      previewThumb.src = '';
+      previewThumb.classList.remove('show');
+      previewIcon.style.display = 'flex';
+    }
+
+    fileInput.addEventListener('change', function () {
+      if (this.files[0]) showFile(this.files[0]);
+    });
+
+    clearBtn.addEventListener('click', clearFile);
+
+    /* Drag & Drop */
+    ['dragenter', 'dragover'].forEach(evt => dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.add('dragover'); }));
+    ['dragleave', 'dragend'].forEach(evt => dropZone.addEventListener(evt, () => dropZone.classList.remove('dragover')));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault(); dropZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const dt = new DataTransfer(); dt.items.add(file);
+        fileInput.files = dt.files;
+        showFile(file);
+      }
+    });
+
+    /* ── SUBMIT LOADER ── */
+    document.getElementById('uploadForm').addEventListener('submit', function (e) {
+      if (!fileInput.files[0]) { e.preventDefault(); fileInput.click(); return; }
+      document.getElementById('loadingOverlay').classList.add('show');
+    });
+
+    /* ── RIPPLE ── */
+    document.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b || b.id === 'clearBtn') return;
+      const r = document.createElement('span'); r.classList.add('ripple');
+      const rc = b.getBoundingClientRect(), sz = Math.max(rc.width, rc.height);
+      r.style.cssText = `width:${sz}px;height:${sz}px;left:${e.clientX - rc.left - sz / 2}px;top:${e.clientY - rc.top - sz / 2}px;`;
+      b.style.position = 'relative'; b.style.overflow = 'hidden';
+      b.appendChild(r); r.addEventListener('animationend', () => r.remove());
+    });
+  </script>
+</body>
+
+</html>

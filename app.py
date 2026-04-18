@@ -224,6 +224,10 @@ def predict():
                            filename=file.filename,
                            time=inf_time)
 
+@app.route('/upload')
+def upload():
+    return render_template('upload.html')
+
 # -------------------- RUN --------------------
 if __name__ == '__main__':
     app.run(debug=True)
