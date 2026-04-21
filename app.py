@@ -165,7 +165,7 @@ def login():
         if user and check_password_hash(user.password, request.form['password']):
             login_user(user)
             session['user_id'] = user.id
-            return redirect(url_for('detector'))
+            return redirect(url_for('upload'))   # CHANGED: redirect to upload after login
 
         flash('Invalid credentials', 'error')
 
@@ -178,11 +178,12 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# -------------------- DETECTOR PAGE --------------------
-@app.route('/detector')
+# -------------------- UPLOAD PAGE --------------------
+# CHANGED: route renamed from /detector → /upload, function from detector → upload
+@app.route('/upload')
 @login_required
-def detector():
-    return render_template('detector.html')
+def upload():
+    return render_template('upload.html')
 
 # -------------------- PREDICTION --------------------
 @app.route('/predict', methods=['POST'])
@@ -190,7 +191,7 @@ def detector():
 def predict():
     file = request.files.get('file')
     if not file:
-        return redirect('/detector')
+        return redirect('/upload')   # CHANGED: redirect to /upload if no file
 
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
     file.save(filepath)
