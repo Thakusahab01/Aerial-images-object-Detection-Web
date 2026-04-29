@@ -1,275 +1,1233 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AerialView Detector Pro — AI-Powered Aerial Intelligence</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-:root {
-  --red:#FF2D2D;--red2:#FF6B35;--cyan:#00D4FF;--teal:#00FFB3;
-  --gold:#FFD700;--violet:#B44FFF;
-  --bg:#060810;--bg2:#0C0F1A;--bg3:#121626;--panel:#0F1320;
-  --glass:rgba(255,255,255,0.04);--glass2:rgba(255,255,255,0.08);
-  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
-  --text:#E2E8F0;--muted:#64748B;--faint:#2A3042;
-  --font:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-body{font-family:var(--font);background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
-::selection{background:rgba(0,212,255,0.25);color:#fff;}
-::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(0,212,255,0.3);border-radius:2px;}
-#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AerialView Detector Pro — AI-Powered Aerial Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --red: #FF2D2D;
+      --red2: #FF6B35;
+      --cyan: #00D4FF;
+      --teal: #00FFB3;
+      --gold: #FFD700;
+      --violet: #B44FFF;
+      --bg: #060810;
+      --bg2: #0C0F1A;
+      --bg3: #121626;
+      --panel: #0F1320;
+      --glass: rgba(255, 255, 255, 0.04);
+      --glass2: rgba(255, 255, 255, 0.08);
+      --border: rgba(255, 255, 255, 0.08);
+      --border2: rgba(255, 255, 255, 0.14);
+      --text: #E2E8F0;
+      --muted: #64748B;
+      --faint: #2A3042;
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
 
-/* NAV */
-.nav{position:fixed;top:0;left:0;right:0;z-index:1000;height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;transition:background 0.4s,border-color 0.4s;}
-.nav.scrolled{background:rgba(6,8,16,0.92);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);}
-.nav-brand{display:flex;align-items:center;gap:12px;text-decoration:none;}
-.nav-badge{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--red),var(--red2));display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 20px rgba(255,45,45,0.4);animation:badgePulse 3s ease-in-out infinite;}
-@keyframes badgePulse{0%,100%{box-shadow:0 0 20px rgba(255,45,45,0.4)}50%{box-shadow:0 0 35px rgba(255,45,45,0.7)}}
-.nav-title{font-size:16px;font-weight:700;color:#fff;letter-spacing:-0.02em;}
-.nav-links{display:flex;gap:32px;list-style:none;}
-.nav-links a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;letter-spacing:0.02em;transition:color 0.2s;}
-.nav-links a:hover{color:#fff;}
-.nav-right{display:flex;align-items:center;gap:10px;}
-.nav-login{padding:8px 18px;border-radius:8px;background:transparent;border:1px solid var(--border2);color:var(--text);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s;}
-.nav-login:hover{background:var(--glass2);border-color:rgba(0,212,255,0.4);color:#fff;}
-.nav-cta{padding:8px 20px;border-radius:8px;background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;box-shadow:0 0 20px rgba(255,45,45,0.3);transition:all 0.2s;}
-.nav-cta:hover{transform:translateY(-1px);box-shadow:0 4px 28px rgba(255,45,45,0.5);}
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-/* HERO */
-.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;z-index:1;}
-.hero-bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1576493282512-2b5a2e7b1d7e?w=1800&q=80') center/cover no-repeat;animation:heroZoom 20s ease-in-out infinite alternate;}
-@keyframes heroZoom{0%{transform:scale(1)}100%{transform:scale(1.06)}}
-.hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,8,16,0.3) 0%,rgba(6,8,16,0.1) 40%,rgba(6,8,16,0.7) 80%,#060810 100%),linear-gradient(90deg,rgba(6,8,16,0.6) 0%,transparent 50%,rgba(6,8,16,0.3) 100%);}
-.hero-scan{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;}
-.hero-scan::before{content:'';position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.6),transparent);animation:scanDown 6s linear infinite;top:-2px;}
-@keyframes scanDown{0%{top:-2px}100%{top:100%}}
-.hero-grid{position:absolute;inset:0;z-index:2;pointer-events:none;background-image:linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);background-size:60px 60px;mask-image:linear-gradient(180deg,transparent 0%,rgba(0,0,0,0.4) 30%,rgba(0,0,0,0.4) 70%,transparent 100%);}
-.hero-content{position:relative;z-index:5;text-align:center;max-width:880px;padding:0 24px;}
-.hero-tag{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);border-radius:20px;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--cyan);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:28px;animation:fadeUp 0.8s ease 0.2s both;}
-.hero-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:badgePulse 1.5s ease infinite;}
-.hero-h1{font-size:clamp(2.8rem,7vw,5.5rem);font-weight:900;line-height:1.0;letter-spacing:-0.04em;color:#fff;margin-bottom:24px;animation:fadeUp 0.8s ease 0.35s both;}
-.hero-h1 span{background:linear-gradient(135deg,var(--cyan),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.hero-sub{font-size:1.1rem;font-weight:400;color:rgba(226,232,240,0.7);line-height:1.7;max-width:600px;margin:0 auto 40px;animation:fadeUp 0.8s ease 0.5s both;}
-.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;animation:fadeUp 0.8s ease 0.65s both;}
-.btn-primary{padding:14px 32px;border-radius:10px;background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;font-size:14px;font-weight:600;letter-spacing:0.02em;text-decoration:none;border:none;cursor:pointer;box-shadow:0 0 30px rgba(255,45,45,0.35);transition:all 0.25s;}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 40px rgba(255,45,45,0.55);}
-.btn-ghost{padding:14px 32px;border-radius:10px;background:var(--glass);border:1px solid var(--border2);color:#fff;font-size:14px;font-weight:500;text-decoration:none;cursor:pointer;backdrop-filter:blur(10px);transition:all 0.25s;}
-.btn-ghost:hover{background:var(--glass2);border-color:rgba(0,212,255,0.4);transform:translateY(-1px);}
-.scroll-hint{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);z-index:5;display:flex;flex-direction:column;align-items:center;gap:8px;animation:fadeUp 1s ease 1.2s both;}
-.scroll-hint span{font-size:10px;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;font-family:var(--mono);}
-.scroll-arrow{width:20px;height:34px;border:1.5px solid rgba(255,255,255,0.2);border-radius:10px;display:flex;justify-content:center;padding-top:6px;}
-.scroll-arrow::before{content:'';width:3px;height:8px;border-radius:2px;background:var(--cyan);animation:scrollBob 1.5s ease-in-out infinite;}
-@keyframes scrollBob{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(6px);opacity:0.3}}
-.hero-stats{position:absolute;bottom:80px;left:0;right:0;z-index:5;display:flex;justify-content:center;animation:fadeUp 0.8s ease 0.9s both;}
-.hero-stat{padding:14px 32px;border-right:1px solid rgba(255,255,255,0.08);text-align:center;}
-.hero-stat:last-child{border-right:none;}
-.hs-val{font-size:1.8rem;font-weight:700;color:#fff;line-height:1;font-family:var(--mono);}
-.hs-val span{background:linear-gradient(135deg,var(--cyan),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.hs-label{font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;font-family:var(--mono);}
-@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+    html {
+      scroll-behavior: smooth;
+    }
 
-/* SECTIONS */
-.section{position:relative;z-index:1;padding:100px 40px;}
-.section-tag{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px;}
-.section-tag::before{content:'//';opacity:0.5;}
-.section-h2{font-size:clamp(2rem,4vw,3.2rem);font-weight:800;letter-spacing:-0.03em;color:#fff;line-height:1.1;margin-bottom:16px;}
-.section-sub{font-size:1rem;color:var(--muted);line-height:1.7;max-width:540px;}
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
 
-/* FEATURES */
-.features{position:relative;z-index:1;padding:100px 40px;background:var(--bg2);}
-.feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:60px;}
-.feat-card{padding:28px 22px;border-radius:14px;background:var(--glass);border:1px solid var(--border);transition:all 0.3s;}
-.feat-card:hover{background:var(--glass2);border-color:rgba(0,212,255,0.2);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.4);}
-.feat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:18px;}
-.feat-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;letter-spacing:-0.01em;}
-.feat-desc{font-size:13px;color:var(--muted);line-height:1.6;}
+    ::selection {
+      background: rgba(0, 212, 255, 0.25);
+      color: #fff;
+    }
 
-/* SPECS */
-.specs{position:relative;z-index:1;padding:100px 40px;}
-.specs-inner{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
-.spec-img-col{position:relative;}
-.spec-img{border-radius:16px;overflow:hidden;position:relative;height:480px;}
-.spec-img img{width:100%;height:100%;object-fit:cover;display:block;border-radius:16px;}
-.spec-img-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,212,255,0.1),transparent);border:1px solid rgba(0,212,255,0.2);border-radius:16px;}
-.float-card{position:absolute;background:rgba(6,8,16,0.88);border:1px solid var(--border);border-radius:10px;padding:12px 16px;backdrop-filter:blur(12px);animation:floatBob 4s ease-in-out infinite;}
-@keyframes floatBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-.float-card.fc1{top:20px;left:-24px;animation-delay:0s;}
-.float-card.fc2{bottom:40px;right:-24px;animation-delay:1.5s;}
-.float-card.fc3{top:50%;left:-24px;transform:translateY(-50%);animation:none;}
-.fc-val{font-family:var(--mono);font-size:1.4rem;font-weight:300;color:#fff;line-height:1;}
-.fc-val.cyan{background:linear-gradient(135deg,var(--cyan),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.fc-val.red{background:linear-gradient(135deg,var(--red),var(--red2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.fc-val.gold{background:linear-gradient(135deg,var(--gold),var(--red2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.fc-lbl{font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
-.spec-list{margin-top:36px;display:flex;flex-direction:column;gap:16px;}
-.spec-item{display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border-radius:10px;border:1px solid var(--border);background:var(--glass);transition:all 0.2s;}
-.spec-item:hover{border-color:rgba(0,212,255,0.2);background:var(--glass2);}
-.spec-num{font-family:var(--mono);font-size:1.1rem;font-weight:300;background:linear-gradient(135deg,var(--cyan),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex-shrink:0;min-width:36px;}
-.spec-text-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:3px;}
-.spec-text-desc{font-size:12px;color:var(--muted);line-height:1.5;}
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
 
-/* CTA */
-.cta-section{position:relative;z-index:1;padding:120px 40px;text-align:center;overflow:hidden;}
-.cta-bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1529686342540-1b43aec0df75?w=1800&q=80') center/cover no-repeat;opacity:0.12;}
-.cta-glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(0,212,255,0.08),transparent);}
-.cta-content{position:relative;z-index:2;}
-.cta-h2{font-size:clamp(2rem,5vw,4rem);font-weight:900;color:#fff;letter-spacing:-0.04em;line-height:1.1;margin-bottom:20px;}
-.cta-sub{font-size:1.05rem;color:var(--muted);max-width:500px;margin:0 auto 40px;line-height:1.7;}
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
 
-/* FOOTER */
-footer{position:relative;z-index:1;padding:40px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.footer-brand{display:flex;align-items:center;gap:10px;}
-.footer-copy{font-size:12px;color:var(--muted);}
-.footer-links{display:flex;gap:24px;}
-.footer-links a{font-size:12px;color:var(--muted);text-decoration:none;transition:color 0.2s;}
-.footer-links a:hover{color:#fff;}
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 212, 255, 0.3);
+      border-radius: 2px;
+    }
 
-/* REVEAL */
-.reveal{opacity:0;transform:translateY(30px);transition:opacity 0.7s ease,transform 0.7s ease;}
-.reveal.in{opacity:1;transform:none;}
-.reveal.delay1{transition-delay:0.1s;}
-.reveal.delay2{transition-delay:0.2s;}
-.reveal.delay3{transition-delay:0.3s;}
-.reveal.delay4{transition-delay:0.4s;}
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
 
-/* RIPPLE */
-.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.15);transform:scale(0);animation:rippleAnim 0.5s linear;pointer-events:none;}
-@keyframes rippleAnim{to{transform:scale(4);opacity:0}}
+    /* NAVIGATION - Updated from about page */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      transition: background 0.4s, border-color 0.4s;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
 
-@media(max-width:1200px){.feat-grid{grid-template-columns:1fr 1fr;}.specs-inner{gap:40px;}}
-@media(max-width:900px){.specs-inner{grid-template-columns:1fr;}.spec-img-col{display:none;}.nav-links{display:none;}}
-@media(max-width:600px){.section{padding:60px 20px;}.hero{min-height:100svh;}.nav{padding:0 20px;}.feat-grid{grid-template-columns:1fr;}.hero-stats{display:none;}.nav-login{display:none;}}
-</style>
+    .nav.scrolled {
+      background: rgba(6, 8, 16, 0.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .nav-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--red), var(--red2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      box-shadow: 0 0 20px rgba(255, 45, 45, 0.4);
+      animation: badgePulse 3s ease-in-out infinite;
+    }
+
+    @keyframes badgePulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(255, 45, 45, 0.4)
+      }
+
+      50% {
+        box-shadow: 0 0 35px rgba(255, 45, 45, 0.7)
+      }
+    }
+
+    .nav-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: #fff;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-login {
+      padding: 8px 18px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .nav-login:hover {
+      background: var(--glass2);
+      border-color: rgba(0, 212, 255, 0.4);
+      color: #fff;
+    }
+
+    .nav-cta {
+      padding: 8px 20px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--red), var(--red2));
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(255, 45, 45, 0.3);
+      transition: all 0.2s;
+    }
+
+    .nav-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 28px rgba(255, 45, 45, 0.5);
+    }
+
+    /* FOOTER - Updated from about page */
+    footer {
+      position: relative;
+      z-index: 1;
+      padding: 40px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: #fff;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .nav-links {
+        display: none;
+      }
+
+      .nav {
+        padding: 0 20px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .nav-login {
+        display: none;
+      }
+
+      footer {
+        padding: 28px 20px;
+        flex-direction: column;
+        gap: 14px;
+        text-align: center;
+      }
+    }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1576493282512-2b5a2e7b1d7e?w=1800&q=80') center/cover no-repeat;
+      animation: heroZoom 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes heroZoom {
+      0% {
+        transform: scale(1)
+      }
+
+      100% {
+        transform: scale(1.06)
+      }
+    }
+
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(6, 8, 16, 0.3) 0%, rgba(6, 8, 16, 0.1) 40%, rgba(6, 8, 16, 0.7) 80%, #060810 100%), linear-gradient(90deg, rgba(6, 8, 16, 0.6) 0%, transparent 50%, rgba(6, 8, 16, 0.3) 100%);
+    }
+
+    .hero-scan {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .hero-scan::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.6), transparent);
+      animation: scanDown 6s linear infinite;
+      top: -2px;
+    }
+
+    @keyframes scanDown {
+      0% {
+        top: -2px
+      }
+
+      100% {
+        top: 100%
+      }
+    }
+
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background-image: linear-gradient(rgba(0, 212, 255, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.4) 30%, rgba(0, 0, 0, 0.4) 70%, transparent 100%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 5;
+      text-align: center;
+      max-width: 880px;
+      padding: 0 24px;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(0, 212, 255, 0.08);
+      border: 1px solid rgba(0, 212, 255, 0.25);
+      border-radius: 20px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--cyan);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      animation: fadeUp 0.8s ease 0.2s both;
+    }
+
+    .hero-tag::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: badgePulse 1.5s ease infinite;
+    }
+
+    .hero-h1 {
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: -0.04em;
+      color: #fff;
+      margin-bottom: 24px;
+      animation: fadeUp 0.8s ease 0.35s both;
+    }
+
+    .hero-h1 span {
+      background: linear-gradient(135deg, var(--cyan), var(--teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: rgba(226, 232, 240, 0.7);
+      line-height: 1.7;
+      max-width: 600px;
+      margin: 0 auto 40px;
+      animation: fadeUp 0.8s ease 0.5s both;
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeUp 0.8s ease 0.65s both;
+    }
+
+    .btn-primary {
+      padding: 14px 32px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--red), var(--red2));
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(255, 45, 45, 0.35);
+      transition: all 0.25s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 40px rgba(255, 45, 45, 0.55);
+    }
+
+    .btn-ghost {
+      padding: 14px 32px;
+      border-radius: 10px;
+      background: var(--glass);
+      border: 1px solid var(--border2);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: all 0.25s;
+    }
+
+    .btn-ghost:hover {
+      background: var(--glass2);
+      border-color: rgba(0, 212, 255, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 36px;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      width: fit-content;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      animation: fadeUp 1s ease 1.2s both;
+    }
+
+    .scroll-hint span {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-family: var(--mono);
+    }
+
+    .scroll-arrow {
+      width: 20px;
+      height: 34px;
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      padding-top: 6px;
+    }
+
+    .scroll-arrow::before {
+      content: '';
+      width: 3px;
+      height: 8px;
+      border-radius: 2px;
+      background: var(--cyan);
+      animation: scrollBob 1.5s ease-in-out infinite;
+    }
+
+    @keyframes scrollBob {
+
+      0%,
+      100% {
+        transform: translateY(0);
+        opacity: 1
+      }
+
+      50% {
+        transform: translateY(6px);
+        opacity: 0.3
+      }
+    }
+
+    .hero-stats {
+      position: absolute;
+      bottom: 80px;
+      left: 0;
+      right: 0;
+      z-index: 5;
+      display: flex;
+      justify-content: center;
+      animation: fadeUp 0.8s ease 0.9s both;
+    }
+
+    .hero-stat {
+      padding: 14px 32px;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: center;
+    }
+
+    .hero-stat:last-child {
+      border-right: none;
+    }
+
+    .hs-val {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+      font-family: var(--mono);
+    }
+
+    .hs-val span {
+      background: linear-gradient(135deg, var(--cyan), var(--teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hs-label {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 4px;
+      font-family: var(--mono);
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    /* SECTIONS */
+    .section {
+      position: relative;
+      z-index: 1;
+      padding: 100px 40px;
+    }
+
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 16px;
+    }
+
+    .section-tag::before {
+      content: '//';
+      opacity: 0.5;
+    }
+
+    .section-h2 {
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 540px;
+    }
+
+    /* FEATURES */
+    .features {
+      position: relative;
+      z-index: 1;
+      padding: 120px 40px;
+      background: var(--bg2);
+      overflow: visible;
+      isolation: isolate;
+    }
+
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 60px;
+      position: relative;
+      z-index: 1;
+      overflow: visible;
+    }
+
+    .feat-card {
+      padding: 28px 22px;
+      border-radius: 14px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      position: relative;
+      z-index: 1;
+      transition: all 0.35s ease;
+      transform-origin: center;
+    }
+
+    .feat-card:hover {
+      transform: translateY(-25px) scale(1.08);
+      z-index: 9999;
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), 0 0 50px rgba(0, 212, 255, 0.4);
+      border-color: rgba(0, 212, 255, 0.8);
+      background: rgba(0, 212, 255, 0.1);
+    }
+
+    .feat-card:active,
+    .feat-card.clicked {
+      background: rgba(0, 212, 255, 0.12);
+      border-color: rgba(0, 212, 255, 0.9);
+      transform: translateY(-14px) scale(1.04);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 50px rgba(0, 212, 255, 0.4);
+      z-index: 100;
+    }
+
+    .feat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 18px;
+    }
+
+    .feat-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .feat-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* SPECS */
+    .specs {
+      position: relative;
+      z-index: 1;
+      padding: 100px 40px;
+    }
+
+    .specs-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .spec-img-col {
+      position: relative;
+    }
+
+    .spec-img {
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      height: 480px;
+    }
+
+    .spec-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 16px;
+    }
+
+    .spec-img-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), transparent);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 16px;
+    }
+
+    .float-card {
+      position: absolute;
+      background: rgba(6, 8, 16, 0.88);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      backdrop-filter: blur(12px);
+      animation: floatBob 4s ease-in-out infinite;
+    }
+
+    @keyframes floatBob {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(-6px)
+      }
+    }
+
+    .float-card.fc1 {
+      top: 20px;
+      left: -24px;
+      animation-delay: 0s;
+    }
+
+    .float-card.fc2 {
+      bottom: 40px;
+      right: -24px;
+      animation-delay: 1.5s;
+    }
+
+    .float-card.fc3 {
+      top: 50%;
+      left: -24px;
+      transform: translateY(-50%);
+      animation: none;
+    }
+
+    .fc-val {
+      font-family: var(--mono);
+      font-size: 1.4rem;
+      font-weight: 300;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .fc-val.cyan {
+      background: linear-gradient(135deg, var(--cyan), var(--teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .fc-val.red {
+      background: linear-gradient(135deg, var(--red), var(--red2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .fc-val.gold {
+      background: linear-gradient(135deg, var(--gold), var(--red2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .fc-lbl {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .spec-list {
+      margin-top: 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .spec-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 16px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--glass);
+      transition: all 0.2s;
+    }
+
+    .spec-item:hover {
+      border-color: rgba(0, 212, 255, 0.2);
+      background: var(--glass2);
+    }
+
+    .spec-num {
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      font-weight: 300;
+      background: linear-gradient(135deg, var(--cyan), var(--teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      flex-shrink: 0;
+      min-width: 36px;
+    }
+
+    .spec-text-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 3px;
+    }
+
+    .spec-text-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* CTA */
+    .cta-section {
+      position: relative;
+      z-index: 1;
+      padding: 120px 40px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .cta-bg {
+      position: absolute;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1529686342540-1b43aec0df75?w=1800&q=80') center/cover no-repeat;
+      opacity: 0.12;
+    }
+
+    .cta-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(0, 212, 255, 0.08), transparent);
+    }
+
+    .cta-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .cta-h2 {
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .cta-sub {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 500px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+
+    /* REVEAL */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.in {
+      opacity: 1;
+      transform: none;
+    }
+
+    .reveal.delay1 {
+      transition-delay: 0.1s;
+    }
+
+    .reveal.delay2 {
+      transition-delay: 0.2s;
+    }
+
+    .reveal.delay3 {
+      transition-delay: 0.3s;
+    }
+
+    .reveal.delay4 {
+      transition-delay: 0.4s;
+    }
+
+    /* RIPPLE */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(0);
+      animation: rippleAnim 0.5s linear;
+      pointer-events: none;
+    }
+
+    @keyframes rippleAnim {
+      to {
+        transform: scale(4);
+        opacity: 0
+      }
+    }
+
+    @media(max-width:1200px) {
+      .feat-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .specs-inner {
+        gap: 40px;
+      }
+    }
+
+    @media(max-width:900px) {
+      .specs-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .spec-img-col {
+        display: none;
+      }
+
+      .nav-links {
+        display: none;
+      }
+    }
+
+    @media(max-width:600px) {
+      .section {
+        padding: 60px 20px;
+      }
+
+      .hero {
+        min-height: 100svh;
+      }
+
+      .nav {
+        padding: 0 20px;
+      }
+
+      .feat-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-stats {
+        display: none;
+      }
+
+      .nav-login {
+        display: none;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<canvas id="bg-canvas"></canvas>
+  <canvas id="bg-canvas"></canvas>
 
-<!-- NAV -->
-<nav class="nav" id="nav">
-  <a class="nav-brand" href="/">
-    <div class="nav-badge">🛰</div>
-    <span class="nav-title">AerialView Pro</span>
-  </a>
-  <ul class="nav-links">
-    <li><a href="/upload">Upload & Detect</a></li>
-    <li><a href="#features">Features</a></li>
-    <li><a href="#specs">Technology</a></li>
-  </ul>
-  <div class="nav-right">
-    <a class="nav-login" href="/login">Log In</a>
-    <a class="nav-cta" href="/register">Sign Up Free</a>
-  </div>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-scan"></div>
-  <div class="hero-grid"></div>
-  <div class="hero-content">
-    <div class="hero-tag">AI-Powered · Pixel-Level Intelligence</div>
-    <h1 class="hero-h1">See What Others<br><span>Miss From Above</span></h1>
-    <p class="hero-sub">Multi-sector aerial image analysis at pixel resolution. From disaster relief to precision agriculture — detect, classify, and act in real time.</p>
-    <div class="hero-btns">
-      <!-- CHANGED: href="/detector" → href="/upload" -->
-      <a class="btn-primary" href="/upload">Start Detecting</a>
-      <a class="btn-ghost" href="#features">Explore Features</a>
+  <!-- NAV - Updated from about page -->
+  <nav class="nav" id="nav">
+    <a class="nav-brand" href="{{ url_for('index') }}">
+      <div class="nav-badge">🛰</div>
+      <span class="nav-title">AerialView Pro</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="{{ url_for('index') }}">Home</a></li>
+      <li><a href="{{ url_for('detector') }}">Upload</a></li>
+      <li><a href="{{ url_for('about') }}">About</a></li>
+      <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+      <li><a href="{{ url_for('history') }}">History</a></li>
+      <li><a href="{{ url_for('support') }}">Support</a></li>
+      <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+    </ul>
+    <div class="nav-right">
+      <a class="nav-login" href="{{ url_for('login') }}">Log In</a>
+      <a class="nav-cta" href="{{ url_for('register') }}">Sign Up Free</a>
     </div>
-  </div>
-  <div class="hero-stats">
-    <div class="hero-stat"><div class="hs-val"><span>99.4</span>%</div><div class="hs-label">Accuracy</div></div>
-    <div class="hero-stat"><div class="hs-val"><span>12</span>+</div><div class="hs-label">Algorithms</div></div>
-    <div class="hero-stat"><div class="hs-val"><span>6</span></div><div class="hs-label">Industry Sectors</div></div>
-    <div class="hero-stat"><div class="hs-val"><span>&lt;1s</span></div><div class="hs-label">Detection Time</div></div>
-  </div>
-  <div class="scroll-hint">
-    <div class="scroll-arrow"></div>
-    <span>Scroll to explore</span>
-  </div>
-</section>
+  </nav>
 
-<!-- TECH SPECS -->
-<section class="specs" id="specs">
-  <div style="max-width:1600px;margin:0 auto;">
-    <div class="specs-inner">
-      <div class="spec-img-col reveal">
-        <div class="spec-img">
-          <img src="https://images.unsplash.com/photo-1521295121783-8a321d551ad2?w=900&q=80" alt="Aerial analysis">
-          <div class="spec-img-overlay"></div>
-        </div>
-        <div class="float-card fc1"><div class="fc-val cyan">0.3m</div><div class="fc-lbl">Min resolution</div></div>
-        <div class="float-card fc2"><div class="fc-val gold">94.8%</div><div class="fc-lbl">Avg accuracy</div></div>
-        <div class="float-card fc3"><div class="fc-val red">Real-time</div><div class="fc-lbl">Processing mode</div></div>
-      </div>
-      <div class="reveal delay1">
-        <div class="section-tag">Technology</div>
-        <h2 class="section-h2">Engineered for<br>Mission-Critical Insight</h2>
-        <p class="section-sub" style="margin-top:16px;">AerialView Pro combines classical computer vision with sector-specific intelligence to deliver reliable detections even in challenging conditions.</p>
-        <div class="spec-list">
-          <div class="spec-item"><div class="spec-num">01</div><div><div class="spec-text-title">Pixel-Level Segmentation</div><div class="spec-text-desc">Process every pixel independently — detect objects as small as individual vehicles or crop rows at ground truth resolution.</div></div></div>
-          <div class="spec-item"><div class="spec-num">02</div><div><div class="spec-text-title">Multi-Spectral Support</div><div class="spec-text-desc">HSV, RGB, and custom color-space algorithms designed for NIR and thermal band imagery across diverse sensor types.</div></div></div>
-          <div class="spec-item"><div class="spec-num">03</div><div><div class="spec-text-title">Non-Maximum Suppression</div><div class="spec-text-desc">Intelligent overlap elimination ensures clean, deduplicated bounding boxes without sacrificing recall on dense scenes.</div></div></div>
-          <div class="spec-item"><div class="spec-num">04</div><div><div class="spec-text-title">Sector-Adaptive Tuning</div><div class="spec-text-desc">Six specialized parameter presets — auto-configured to the physics and object vocabulary of each deployment environment.</div></div></div>
-        </div>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-scan"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+      <div class="hero-tag">AI-Powered · Pixel-Level Intelligence</div>
+      <h1 class="hero-h1">See What Others<br><span>Miss From Above</span></h1>
+      <p class="hero-sub">Multi-sector aerial image analysis at pixel resolution. From disaster relief to precision
+        agriculture — detect, classify, and act in real time.</p>
+      <div class="hero-btns">
+        <a class="btn-primary" href="{{ url_for('detector') }}">Get Started</a>
+        <a class="btn-ghost" href="#features">Explore Features</a>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- FEATURES -->
-<section class="features" id="features">
-  <div style="max-width:1600px;margin:0 auto;">
-    <div class="reveal" style="text-align:center;">
-      <div class="section-tag" style="justify-content:center;">Capabilities</div>
-      <h2 class="section-h2" style="text-align:center;">Built for Intelligence<br>at Every Altitude</h2>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hs-val"><span>99.4</span>%</div>
+        <div class="hs-label">Accuracy</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hs-val"><span>12</span>+</div>
+        <div class="hs-label">Algorithms</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hs-val"><span>6</span></div>
+        <div class="hs-label">Industry Sectors</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hs-val"><span>&lt;1s</span></div>
+        <div class="hs-label">Detection Time</div>
+      </div>
     </div>
-    <div class="feat-grid">
-      <div class="feat-card reveal delay1"><div class="feat-icon" style="background:rgba(0,212,255,0.1);">🔬</div><div class="feat-title">12+ Detection Algorithms</div><div class="feat-desc">From color segmentation to superpixel analysis — choose the right tool for every terrain and lighting condition.</div></div>
-      <div class="feat-card reveal delay2"><div class="feat-icon" style="background:rgba(255,45,45,0.1);">⚡</div><div class="feat-title">Sub-Second Processing</div><div class="feat-desc">Optimized pixel-parallel algorithms deliver detection results in under one second — even on full-resolution imagery.</div></div>
-      <div class="feat-card reveal delay3"><div class="feat-icon" style="background:rgba(0,255,179,0.1);">🎯</div><div class="feat-title">Confidence Scoring</div><div class="feat-desc">Every bounding box ships with a color-coded confidence rating so operators can prioritize high-certainty findings instantly.</div></div>
-      <div class="feat-card reveal delay4"><div class="feat-icon" style="background:rgba(255,215,0,0.1);">🌡</div><div class="feat-title">Heatmap Overlays</div><div class="feat-desc">Visualize detection intensity across the full frame with radial heatmap overlays — identify dense object clusters instantly.</div></div>
-      <div class="feat-card reveal delay1"><div class="feat-icon" style="background:rgba(180,79,255,0.1);">⧉</div><div class="feat-title">Before/After Compare</div><div class="feat-desc">Side-by-side split comparison with a draggable slider — verify processing fidelity and overlay accuracy in one view.</div></div>
-      <div class="feat-card reveal delay2"><div class="feat-icon" style="background:rgba(255,107,53,0.1);">💡</div><div class="feat-title">AI Smart Suggestions</div><div class="feat-desc">Sector-aware algorithm recommendations and one-click parameter auto-tuning eliminate trial-and-error setup time.</div></div>
-      <div class="feat-card reveal delay3"><div class="feat-icon" style="background:rgba(0,212,255,0.1);">📊</div><div class="feat-title">Live Analytics</div><div class="feat-desc">Animated counters, distribution bar charts, and detection history log — full operational awareness at a glance.</div></div>
-      <div class="feat-card reveal delay4"><div class="feat-icon" style="background:rgba(0,255,179,0.1);">🔒</div><div class="feat-title">Export & Archive</div><div class="feat-desc">JSON export with full detection metadata, timestamps, and sector tags. Undo/redo history preserves every session state.</div></div>
+    <div class="scroll-hint">
+      <div class="scroll-arrow"></div>
+      <span>Scroll to explore</span>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- FOOTER -->
-<footer>
-  <div class="footer-brand">
-    <div class="nav-badge" style="width:28px;height:28px;font-size:13px;">🛰</div>
-    <span style="font-size:13px;font-weight:600;color:#fff;">AerialView Pro</span>
-  </div>
-  <span class="footer-copy">© 2024 AerialView Detector Pro · Multi-Sector Edition</span>
-  <div class="footer-links">
-    <a href="#">Documentation</a>
-    <a href="#">API</a>
-    <a href="/login">Login</a>
-    <a href="/register">Register</a>
-  </div>
-</footer>
+  <!-- TECH SPECS — Technology pehle -->
+  <section class="specs" id="specs">
+    <div style="max-width:1600px;margin:0 auto;">
+      <div class="specs-inner">
+        <div class="spec-img-col reveal">
+          <div class="spec-img">
+           <img src="{{ url_for('static', filename='home.jpg') }}" alt="Aerial analysis">
+            <div class="spec-img-overlay"></div>
+          </div>
+          <div class="float-card fc1">
+            <div class="fc-val cyan">0.3m</div>
+            <div class="fc-lbl">Min resolution</div>
+          </div>
+          <div class="float-card fc2">
+            <div class="fc-val gold">94.8%</div>
+            <div class="fc-lbl">Avg accuracy</div>
+          </div>
+          <div class="float-card fc3">
+            <div class="fc-val red">Real-time</div>
+            <div class="fc-lbl">Processing mode</div>
+          </div>
+        </div>
+        <div class="reveal delay1">
+          <div class="section-tag">Technology</div>
+          <h2 class="section-h2">Engineered for<br>Mission-Critical Insight</h2>
+          <p class="section-sub" style="margin-top:16px;">AerialView Pro combines classical computer vision with
+            sector-specific intelligence to deliver reliable detections even in challenging conditions.</p>
+          <div class="spec-list">
+            <div class="spec-item">
+              <div class="spec-num">01</div>
+              <div>
+                <div class="spec-text-title">Pixel-Level Segmentation</div>
+                <div class="spec-text-desc">Process every pixel independently — detect objects as small as individual
+                  vehicles or crop rows at ground truth resolution.</div>
+              </div>
+            </div>
+            <div class="spec-item">
+              <div class="spec-num">02</div>
+              <div>
+                <div class="spec-text-title">Multi-Spectral Support</div>
+                <div class="spec-text-desc">HSV, RGB, and custom color-space algorithms designed for NIR and thermal
+                  band imagery across diverse sensor types.</div>
+              </div>
+            </div>
+            <div class="spec-item">
+              <div class="spec-num">03</div>
+              <div>
+                <div class="spec-text-title">Non-Maximum Suppression</div>
+                <div class="spec-text-desc">Intelligent overlap elimination ensures clean, deduplicated bounding boxes
+                  without sacrificing recall on dense scenes.</div>
+              </div>
+            </div>
+            <div class="spec-item">
+              <div class="spec-num">04</div>
+              <div>
+                <div class="spec-text-title">Sector-Adaptive Tuning</div>
+                <div class="spec-text-desc">Six specialized parameter presets — auto-configured to the physics and
+                  object vocabulary of each deployment environment.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<script>
-/* particles */
-(function(){
-  const c=document.getElementById('bg-canvas'),ctx=c.getContext('2d');
-  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;}
-  resize();window.addEventListener('resize',resize);
-  const pts=Array.from({length:70},()=>({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*1.5+0.3,vx:(Math.random()-0.5)*0.25,vy:(Math.random()-0.5)*0.25,a:Math.random()*0.35+0.05,hue:Math.random()<0.6?185:Math.random()<0.5?10:145}));
-  function draw(){ctx.clearRect(0,0,c.width,c.height);pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`hsla(${p.hue},90%,65%,${p.a})`;ctx.fill();p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>c.width)p.vx*=-1;if(p.y<0||p.y>c.height)p.vy*=-1;});for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<90){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle=`rgba(0,212,255,${0.06*(1-d/90)})`;ctx.lineWidth=0.4;ctx.stroke();}}requestAnimationFrame(draw);}
-  draw();
-})();
-window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',window.scrollY>60));
-const io=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('in');});},{threshold:0.12});
-document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const r=document.createElement('span');r.classList.add('ripple');const rc=b.getBoundingClientRect(),sz=Math.max(rc.width,rc.height);r.style.cssText=`width:${sz}px;height:${sz}px;left:${e.clientX-rc.left-sz/2}px;top:${e.clientY-rc.top-sz/2}px;`;b.appendChild(r);r.addEventListener('animationend',()=>r.remove());});
-</script>
+  <!-- FEATURES — Capabilities baad mein -->
+  <section class="features" id="features">
+    <div style="max-width:1600px;margin:0 auto;position:relative;">
+      <div class="reveal" style="text-align:center;">
+        <div class="section-tag" style="justify-content:center;">Capabilities</div>
+        <h2 class="section-h2" style="text-align:center;">Built for Intelligence<br>at Every Altitude</h2>
+      </div>
+      <div class="feat-grid">
+        <div class="feat-card reveal delay1">
+          <div class="feat-icon" style="background:rgba(0,212,255,0.1);">🔬</div>
+          <div class="feat-title">12+ Detection Algorithms</div>
+          <div class="feat-desc">From color segmentation to superpixel analysis — choose the right tool for every
+            terrain and lighting condition.</div>
+        </div>
+        <div class="feat-card reveal delay2">
+          <div class="feat-icon" style="background:rgba(255,45,45,0.1);">⚡</div>
+          <div class="feat-title">Sub-Second Processing</div>
+          <div class="feat-desc">Optimized pixel-parallel algorithms deliver detection results in under one second —
+            even on full-resolution imagery.</div>
+        </div>
+        <div class="feat-card reveal delay3">
+          <div class="feat-icon" style="background:rgba(0,255,179,0.1);">🎯</div>
+          <div class="feat-title">Confidence Scoring</div>
+          <div class="feat-desc">Every bounding box ships with a color-coded confidence rating so operators can
+            prioritize high-certainty findings instantly.</div>
+        </div>
+        <div class="feat-card reveal delay4">
+          <div class="feat-icon" style="background:rgba(255,215,0,0.1);">🌡</div>
+          <div class="feat-title">Heatmap Overlays</div>
+          <div class="feat-desc">Visualize detection intensity across the full frame with radial heatmap overlays —
+            identify dense object clusters instantly.</div>
+        </div>
+        <div class="feat-card reveal delay1">
+          <div class="feat-icon" style="background:rgba(180,79,255,0.1);">⧉</div>
+          <div class="feat-title">Before/After Compare</div>
+          <div class="feat-desc">Side-by-side split comparison with a draggable slider — verify processing fidelity and
+            overlay accuracy in one view.</div>
+        </div>
+        <div class="feat-card reveal delay2">
+          <div class="feat-icon" style="background:rgba(255,107,53,0.1);">💡</div>
+          <div class="feat-title">AI Smart Suggestions</div>
+          <div class="feat-desc">Sector-aware algorithm recommendations and one-click parameter auto-tuning eliminate
+            trial-and-error setup time.</div>
+        </div>
+        <div class="feat-card reveal delay3">
+          <div class="feat-icon" style="background:rgba(0,212,255,0.1);">📊</div>
+          <div class="feat-title">Live Analytics</div>
+          <div class="feat-desc">Animated counters, distribution bar charts, and detection history log — full
+            operational awareness at a glance.</div>
+        </div>
+        <div class="feat-card reveal delay4">
+          <div class="feat-icon" style="background:rgba(0,255,179,0.1);">🔒</div>
+          <div class="feat-title">Export & Archive</div>
+          <div class="feat-desc">JSON export with full detection metadata, timestamps, and sector tags. Undo/redo
+            history preserves every session state.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER - Updated from about page -->
+  <footer>
+    <div class="footer-brand">
+      <div class="nav-badge" style="width:28px;height:28px;font-size:13px;">🛰</div>
+      <span style="font-size:13px;font-weight:600;color:#fff;">AerialView Pro</span>
+    </div>
+    <span class="footer-copy">© 2024 AerialView Detector Pro · Multi-Sector Edition</span>
+    <div class="footer-links">
+      <a href="#">Documentation</a>
+      <a href="#">API</a>
+      <a href="{{ url_for('login') }}">Login</a>
+      <a href="{{ url_for('register') }}">Register</a>
+    </div>
+  </footer>
+
+  <script>
+    /* particles */
+    (function () {
+      const c = document.getElementById('bg-canvas'), ctx = c.getContext('2d');
+      function resize() { c.width = window.innerWidth; c.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      const pts = Array.from({ length: 70 }, () => ({ x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight, r: Math.random() * 1.5 + 0.3, vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25, a: Math.random() * 0.35 + 0.05, hue: Math.random() < 0.6 ? 185 : Math.random() < 0.5 ? 10 : 145 }));
+      function draw() { ctx.clearRect(0, 0, c.width, c.height); pts.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fillStyle = `hsla(${p.hue},90%,65%,${p.a})`; ctx.fill(); p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > c.width) p.vx *= -1; if (p.y < 0 || p.y > c.height) p.vy *= -1; }); for (let i = 0; i < pts.length; i++)for (let j = i + 1; j < pts.length; j++) { const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y, d = Math.sqrt(dx * dx + dy * dy); if (d < 90) { ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.strokeStyle = `rgba(0,212,255,${0.06 * (1 - d / 90)})`; ctx.lineWidth = 0.4; ctx.stroke(); } } requestAnimationFrame(draw); }
+      draw();
+    })();
+
+    // Nav scroll effect - Updated from about page
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('nav');
+      if (nav) nav.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    const io = new IntersectionObserver(e => { e.forEach(x => { if (x.isIntersecting) x.target.classList.add('in'); }); }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    document.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const r = document.createElement('span'); r.classList.add('ripple'); const rc = b.getBoundingClientRect(), sz = Math.max(rc.width, rc.height); r.style.cssText = `width:${sz}px;height:${sz}px;left:${e.clientX - rc.left - sz / 2}px;top:${e.clientY - rc.top - sz / 2}px;`; b.appendChild(r); r.addEventListener('animationend', () => r.remove()); });
+
+    // Feature card click effect
+    document.querySelectorAll('.feat-card').forEach(card => {
+      card.addEventListener('click', function () {
+        document.querySelectorAll('.feat-card').forEach(c => c.classList.remove('clicked'));
+        this.classList.add('clicked');
+      });
+    });
+
+    // Scroll hint click
+    document.querySelector('.scroll-hint').addEventListener('click', function () {
+      window.scrollTo({
+        top: window.innerHeight,
+        behavior: 'smooth'
+      });
+    });
+  </script>
 </body>
+
 </html>

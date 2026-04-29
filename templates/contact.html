@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>AerialView Pro — Global Command &amp; Contact</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --red: #FF2D2D;
+      --red2: #FF6B35;
+      --cyan: #00D4FF;
+      --teal: #00FFB3;
+      --gold: #FFD700;
+      --violet: #B44FFF;
+      --bg: #060810;
+      --bg2: #0C0F1A;
+      --panel: #0F1320;
+      --glass: rgba(255, 255, 255, 0.04);
+      --glass2: rgba(255, 255, 255, 0.08);
+      --border: rgba(255, 255, 255, 0.08);
+      --border2: rgba(255, 255, 255, 0.14);
+      --text: #E2E8F0;
+      --muted: #94A3B8;
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      overflow-x: hidden;
+    }
+
+    ::selection {
+      background: rgba(0, 212, 255, 0.25);
+      color: white;
+    }
+
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* NAVIGATION - Updated from about page */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      transition: background 0.4s, border-color 0.4s;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .nav.scrolled {
+      background: rgba(6, 8, 16, 0.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .nav-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--red), var(--red2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      box-shadow: 0 0 20px rgba(255, 45, 45, 0.4);
+      animation: badgePulse 3s ease-in-out infinite;
+    }
+
+    @keyframes badgePulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(255, 45, 45, 0.4); }
+      50% { box-shadow: 0 0 35px rgba(255, 45, 45, 0.7); }
+    }
+
+    .nav-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: #fff;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-login {
+      padding: 8px 18px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .nav-login:hover {
+      background: var(--glass2);
+      border-color: rgba(0, 212, 255, 0.4);
+      color: #fff;
+    }
+
+    .nav-cta {
+      padding: 8px 20px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--red), var(--red2));
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(255, 45, 45, 0.3);
+      transition: all 0.2s;
+    }
+
+    .nav-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 28px rgba(255, 45, 45, 0.5);
+    }
+
+    /* FOOTER - Updated from about page */
+    footer {
+      position: relative;
+      z-index: 2;
+      padding: 40px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: #fff;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .nav-links {
+        display: none;
+      }
+      .nav {
+        padding: 0 20px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .nav-login {
+        display: none;
+      }
+      footer {
+        padding: 28px 20px;
+        flex-direction: column;
+        gap: 14px;
+        text-align: center;
+      }
+    }
+
+    /* Hero Section */
+    .contact-hero {
+      position: relative;
+      min-height: 40vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      margin-top: 70px;
+      padding: 60px 24px 40px;
+      z-index: 1;
+    }
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 14px;
+      background: rgba(0, 212, 255, 0.08);
+      border: 1px solid rgba(0, 212, 255, 0.25);
+      border-radius: 20px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--cyan);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .hero-tag::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: pulseDot 1.5s ease infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+    .contact-hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff, var(--cyan), var(--teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+    .contact-sub {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 550px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Main Layout */
+    .contact-wrapper {
+      position: relative;
+      z-index: 2;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 40px 80px;
+    }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      margin: 40px 0 60px;
+    }
+
+    /* Cards */
+    .glass-card {
+      background: rgba(15, 19, 32, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      backdrop-filter: blur(8px);
+      padding: 32px;
+      transition: all 0.3s;
+    }
+    .glass-card:hover {
+      border-color: rgba(0, 212, 255, 0.3);
+      background: rgba(15, 19, 32, 0.8);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(0,255,179,0.05));
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    .card-header h3 {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    /* Contact Channels */
+    .channel-list {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .channel-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+    }
+    .channel-label {
+      min-width: 70px;
+      color: var(--cyan);
+      font-weight: 500;
+    }
+    .channel-item a {
+      color: var(--teal);
+      text-decoration: none;
+      transition: 0.2s;
+    }
+    .channel-item a:hover {
+      color: white;
+      text-decoration: underline;
+    }
+    .support-badge {
+      margin-top: 28px;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 18px;
+      border-left: 3px solid var(--cyan);
+    }
+    .support-badge p {
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* Form */
+    .form-group {
+      margin-bottom: 22px;
+    }
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 8px;
+    }
+    input, select, textarea {
+      width: 100%;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-family: var(--font);
+      font-size: 14px;
+      color: #fff;
+      transition: 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px rgba(0,212,255,0.15);
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--red), var(--red2));
+      border: none;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 14px;
+      color: white;
+      cursor: pointer;
+      transition: 0.25s;
+      box-shadow: 0 0 15px rgba(255,45,45,0.25);
+      margin-top: 8px;
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(255,45,45,0.45);
+    }
+    .form-feedback {
+      margin-top: 16px;
+      font-size: 13px;
+      text-align: center;
+      font-family: var(--mono);
+    }
+
+    /* Global Hubs */
+    .section-tag-center {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--cyan);
+    }
+    .section-tag::before {
+      content: '//';
+      opacity: 0.6;
+    }
+    .hub-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      margin: 28px 0 60px;
+    }
+    .hub-card {
+      background: rgba(12, 15, 26, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 24px;
+      transition: 0.25s ease;
+    }
+    .hub-card:hover {
+      border-color: rgba(0,212,255,0.4);
+      transform: translateY(-4px);
+    }
+    .hub-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+    .hub-card h4 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .hub-addr {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-family: var(--mono);
+    }
+
+    /* FAQ */
+    .faq-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 28px;
+    }
+    .faq-item {
+      background: rgba(0,0,0,0.2);
+      border-left: 3px solid var(--cyan);
+      padding: 20px 24px;
+      border-radius: 20px;
+    }
+    .faq-item strong {
+      font-size: 15px;
+      color: #fff;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .faq-item p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
+      .contact-grid { grid-template-columns: 1fr; }
+      .hub-grid { grid-template-columns: 1fr; }
+      .faq-grid { grid-template-columns: 1fr; }
+      .contact-wrapper { padding: 0 20px 60px; }
+    }
+    @media (max-width: 600px) {
+      .footer-links { justify-content: center; }
+    }
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.in {
+      opacity: 1;
+      transform: none;
+    }
+    .ripple-effect {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      transform: scale(0);
+      animation: rippleAnim 0.5s linear;
+      pointer-events: none;
+    }
+    @keyframes rippleAnim {
+      to { transform: scale(5); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV - Updated from about page -->
+<nav class="nav" id="nav">
+  <a class="nav-brand" href="{{ url_for('index') }}">
+    <div class="nav-badge">🛰</div>
+    <span class="nav-title">AerialView Pro</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="{{ url_for('index') }}">Home</a></li>
+    <li><a href="{{ url_for('detector') }}">Upload</a></li>
+    <li><a href="{{ url_for('about') }}">About</a></li>
+    <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+    <li><a href="{{ url_for('history') }}">History</a></li>
+    <li><a href="{{ url_for('support') }}">Support</a></li>
+    <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+  </ul>
+  <div class="nav-right">
+    <a class="nav-login" href="{{ url_for('login') }}">Log In</a>
+    <a class="nav-cta" href="{{ url_for('register') }}">Sign Up Free</a>
+  </div>
+</nav>
+
+<section class="contact-hero">
+  <div style="position: relative; z-index: 2;">
+    <div class="hero-tag">DIRECT NEXUS — GLOBAL INTELLIGENCE DESK</div>
+    <h1>Reach Our<br>Mission Operations</h1>
+    <p class="contact-sub">For technical integration, enterprise support, or partnership inquiries — our AI analysts are standing by.</p>
+  </div>
+</section>
+
+<div class="contact-wrapper">
+  <div class="contact-grid">
+    <!-- Left: contact channels -->
+    <div class="glass-card reveal">
+      <div class="card-header">
+        <div class="card-icon">📡</div>
+        <h3>Command Channels</h3>
+      </div>
+      <div class="channel-list">
+        <div class="channel-item"><span class="channel-label">🛸 Hotline</span> <span>+1 (888) 430-AI-AERO</span></div>
+        <div class="channel-item"><span class="channel-label">✉️ Main</span> <a href="mailto:hello@aerialviewpro.ai">hello@aerialviewpro.ai</a></div>
+        <div class="channel-item"><span class="channel-label">⚙️ Support</span> <a href="mailto:tech@aerialviewpro.ai">tech@aerialviewpro.ai</a></div>
+        <div class="channel-item"><span class="channel-label">🤝 Partners</span> <a href="mailto:partners@aerialviewpro.ai">partners@aerialviewpro.ai</a></div>
+        <div class="channel-item"><span class="channel-label">🔐 Security</span> <a href="mailto:security@aerialviewpro.ai">security@aerialviewpro.ai</a></div>
+      </div>
+      <div class="support-badge">
+        <p>⚡ 24/7 emergency response for enterprise contracts<br>📅 Standard support: Mon–Fri 09:00 – 21:00 UTC<br>🌍 Average first-response: 2.4 hours</p>
+      </div>
+    </div>
+
+    <!-- Right: contact form with database save simulation -->
+    <div class="glass-card reveal delay1">
+      <div class="card-header">
+        <div class="card-icon">✍️</div>
+        <h3>Secure Dispatch</h3>
+      </div>
+      <form id="contactForm">
+        <div class="form-group">
+          <label>Full name</label>
+          <input type="text" id="fullname" placeholder="Emily Chen / Dr. Raj Mehra" required="">
+        </div>
+        <div class="form-group">
+          <label>Email address</label>
+          <input type="email" id="email" placeholder="analyst@domain.com" required="">
+        </div>
+        <div class="form-group">
+          <label>Inquiry category</label>
+          <select id="inquiryType">
+            <option value="technical">🔧 Technical &amp; API Integration</option>
+            <option value="sales">📊 Enterprise / Government Sales</option>
+            <option value="partnership">🌐 Strategic Alliance</option>
+            <option value="feedback">💡 Feature Request &amp; Feedback</option>
+            <option value="other">🛩️ Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea rows="4" id="message" placeholder="Describe your aerial intelligence needs, dataset characteristics, or collaboration proposal..."></textarea>
+        </div>
+        <button type="submit" class="btn-submit" id="submitBtn">🚀 Encrypt &amp; Transmit</button>
+        <div class="form-feedback" id="formFeedback"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Intelligence Hubs (Worldwide) -->
+  <div class="reveal delay2">
+    <div class="section-tag-center">
+      <div class="section-tag">Strategic Aerial Hubs</div>
+    </div>
+    <div class="hub-grid">
+      <div class="hub-card"><div class="hub-icon">🌎</div><h4>Americas Command</h4><div class="hub-addr">1280 Enterprise Way, Suite 400<br>Sunnyvale, CA 94089<br>+1 (408) 550-2234</div></div>
+      <div class="hub-card"><div class="hub-icon">🇪🇺</div><h4>EMEA Intelligence Hub</h4><div class="hub-addr">Level 12, The Shard<br>32 London Bridge St, London SE1<br>+44 20 7946 0789</div></div>
+      <div class="hub-card"><div class="hub-icon">🌏</div><h4>APAC Regional Center</h4><div class="hub-addr">Marina One, 9 Straits View<br>Singapore 018937<br>+65 6808 4521</div></div>
+    </div>
+  </div>
+
+  <!-- Frequently Asked Questions -->
+  <div class="reveal delay3">
+    <div class="section-tag-center">
+      <div class="section-tag">Intelligence Briefing</div>
+    </div>
+    <div class="faq-grid">
+      <div class="faq-item"><strong>📡 How fast is the custom model training?</strong><p>We deliver fine-tuned detection parameters within 48 hours for most sectors. Enterprise SLAs are available.</p></div>
+      <div class="faq-item"><strong>🛩️ Can I deploy AerialView Pro on air-gapped environments?</strong><p>Absolutely. We provide containerized inference engines and on-premise packages for defense &amp; critical infra.</p></div>
+      <div class="faq-item"><strong>⚡ What’s the average API response time?</strong><p>Under 350ms for standard detection. Real-time streams process at &lt;30 fps for live drone feeds.</p></div>
+      <div class="faq-item"><strong>🔐 Is my data used for training?</strong><p>Never. Your aerial imagery remains confidential. We offer zero-retention compliance and GDPR/CCPA options.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER - Updated from about page -->
+<footer>
+  <div class="footer-brand">
+    <div class="nav-badge" style="width:28px;height:28px;font-size:13px;">🛰</div>
+    <span style="font-size:13px;font-weight:600;color:#fff;">AerialView Pro</span>
+  </div>
+  <span class="footer-copy">© 2024 AerialView Detector Pro · Multi-Sector Edition</span>
+  <div class="footer-links">
+    <a href="#">Documentation</a>
+    <a href="#">API</a>
+    <a href="{{ url_for('login') }}">Login</a>
+    <a href="{{ url_for('register') }}">Register</a>
+  </div>
+</footer>
+
+<script>
+  (function() {
+    // Particle network (same theme)
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let w, h;
+    function resizeCanvas() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    const particles = [];
+    const PARTICLE_COUNT = 65;
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: Math.random() * 1.4 + 0.4,
+        vx: (Math.random() - 0.5) * 0.22,
+        vy: (Math.random() - 0.5) * 0.22,
+        alpha: Math.random() * 0.45 + 0.1,
+        hue: Math.random() < 0.55 ? 185 : (Math.random() < 0.5 ? 12 : 150)
+      });
+    }
+    
+    function draw() {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, w, h);
+      for (let p of particles) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue}, 85%, 65%, ${p.alpha})`;
+        ctx.fill();
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0 || p.x > w) p.vx *= -1;
+        if (p.y < 0 || p.y > h) p.vy *= -1;
+      }
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i+1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 100) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(0, 212, 255, ${0.05 * (1 - dist/100)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+    
+    // Nav scroll effect
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+    });
+    
+    // Reveal animations
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('in');
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(r => observer.observe(r));
+    
+    // Form submission simulation + SQLAlchemy style backend placeholder
+    const form = document.getElementById('contactForm');
+    const feedbackDiv = document.getElementById('formFeedback');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('fullname').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const category = document.getElementById('inquiryType').value;
+      const message = document.getElementById('message').value.trim();
+      if (!name || !email || !message) {
+        feedbackDiv.innerHTML = '⚠️ All fields required. Please complete the dispatch.';
+        feedbackDiv.style.color = '#FF6B35';
+        setTimeout(() => { if(feedbackDiv) feedbackDiv.innerHTML = ''; }, 3000);
+        return;
+      }
+      if (!email.includes('@') || !email.includes('.')) {
+        feedbackDiv.innerHTML = '⚠️ Invalid secure email format.';
+        feedbackDiv.style.color = '#FF6B35';
+        setTimeout(() => { if(feedbackDiv) feedbackDiv.innerHTML = ''; }, 3000);
+        return;
+      }
+      const btn = document.getElementById('submitBtn');
+      const originalText = btn.innerText;
+      btn.innerText = '🔐 Encrypting & storing to secure db...';
+      btn.disabled = true;
+      
+      // simulate network & database storage (SQLAlchemy style)
+      setTimeout(() => {
+        // Here you would normally POST to /api/contact and store in ContactMessage model
+        console.log(`[DB Simulate] Insert into contact_messages (name, email, type, message, created_at) VALUES ('${name}', '${email}', '${category}', '${message.replace(/'/g, "''")}', NOW())`);
+        feedbackDiv.innerHTML = '✅ Transmission recorded. AerialView command will reply within 4 hours. Reference ID: AVP-' + Math.floor(Math.random()*90000+10000);
+        feedbackDiv.style.color = '#00FFB3';
+        btn.innerText = originalText;
+        btn.disabled = false;
+        form.reset();
+        setTimeout(() => { if(feedbackDiv) feedbackDiv.innerHTML = ''; }, 5000);
+      }, 900);
+    });
+    
+    // Ripple effect for buttons
+    document.querySelectorAll('button, .btn-submit, .nav-cta').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple-effect';
+        const size = Math.max(rect.width, rect.height);
+        ripple.style.width = ripple.style.height = `${size}px`;
+        ripple.style.left = `${e.clientX - rect.left - size/2}px`;
+        ripple.style.top = `${e.clientY - rect.top - size/2}px`;
+        ripple.style.position = 'absolute';
+        ripple.style.overflow = 'hidden';
+        btn.style.position = 'relative';
+        btn.appendChild(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove());
+      });
+    });
+  })();
+</script>
+
+</body></html>

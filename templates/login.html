@@ -17,7 +17,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
-body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
 ::selection{background:rgba(0,212,255,0.25);color:#fff;}
 #bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
 .scan-line{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
@@ -289,6 +289,21 @@ input.field-has-err{border-color:rgba(255,45,45,0.5)!important;background:rgba(2
   </div><!-- end .right-panel -->
 
 </div><!-- end .page -->
+
+
+<footer style="position:relative;z-index:2;padding:28px 40px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--red),var(--red2));display:flex;align-items:center;justify-content:center;font-size:13px;">🛰</div>
+        <span style="font-size:13px;font-weight:600;color:#fff;">AerialView Pro</span>
+    </div>
+    <span style="font-size:12px;color:var(--muted);">© 2024 AerialView Detector Pro · Multi-Sector Edition</span>
+    <div style="display:flex;gap:24px;">
+        <a href="#" style="font-size:12px;color:var(--muted);text-decoration:none;">Documentation</a>
+        <a href="#" style="font-size:12px;color:var(--muted);text-decoration:none;">API</a>
+        <a href="{{ url_for('login') }}" style="font-size:12px;color:var(--muted);text-decoration:none;">Login</a>
+        <a href="{{ url_for('register') }}" style="font-size:12px;color:var(--muted);text-decoration:none;">Register</a>
+    </div>
+</footer>
 
 <script>
 /* ── particles ── */

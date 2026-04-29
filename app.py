@@ -1,7 +1,7 @@
-from flask import Flask, render_template, url_for, request, redirect, flash, session
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_required as flask_login_required, login_user, logout_user, LoginManager, UserMixin
+from flask import Flask, render_template, request, redirect, url_for, session, flash  
+from flask_sqlalchemy import SQLAlchemy 
+from werkzeug.security import generate_password_hash, check_password_hash 
+from functools import wraps
 import os
 import time
 import numpy as np
@@ -11,52 +11,42 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import models, transforms
 from PIL import Image
-from functools import wraps
 
-# -------------------- FLASK SETUP --------------------
 app = Flask(__name__)
-app.secret_key = 'secret_key'
-
-# Database config
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-
-# Upload & Result folders
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 app.config['RESULT_FOLDER'] = os.path.join('static', 'results')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['RESULT_FOLDER'], exist_ok=True)
 
-# -------------------- LOGIN SETUP --------------------
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
+app.secret_key = 'secretkey'  # secret key for session management
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # to suppress a warning from SQLAlchemy
+db = SQLAlchemy(app) # initialize the database
 
-class User(UserMixin, db.Model):
-    id       = db.Column(db.Integer, primary_key=True)
-    name     = db.Column(db.String(100))
-    email    = db.Column(db.String(50), unique=True)
-    password = db.Column(db.String(200))
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
-with app.app_context():
-    db.create_all()
-
-# -------------------- CUSTOM LOGIN REQUIRED --------------------
+# Login required decorator
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            flash('Please log in first', 'error')
+            flash('Please log in to access this page.', 'error')
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
 
-# -------------------- MODEL --------------------
+# User model
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    email = db.Column(db.String(100), unique=True)
+    password = db.Column(db.String(200)) # Increased to 200 to safely store hashed passwords
+
+# Database initialization with app context
+with app.app_context(): 
+    db.create_all()
+
+# ---------------------------------------------------------
+# 1. MODEL DEFINITION
+# ---------------------------------------------------------
 def double_conv(in_channels, out_channels):
     return nn.Sequential(
         nn.Conv2d(in_channels, out_channels, 3, padding=1),
@@ -68,7 +58,7 @@ def double_conv(in_channels, out_channels):
 class ResNetUNet(nn.Module):
     def __init__(self, n_class):
         super().__init__()
-        self.base_model = models.resnet18(weights=None)
+        self.base_model = models.resnet18(pretrained=False)
         self.base_layers = list(self.base_model.children())
         self.layer0 = nn.Sequential(*self.base_layers[:3])
         self.layer0_1 = nn.Sequential(*self.base_layers[3:5])
@@ -104,7 +94,7 @@ class ResNetUNet(nn.Module):
         return out
 
 # ---------------------------------------------------------
-# 2. CONFIGURATION
+# 2. CLASS CONFIGURATION
 # ---------------------------------------------------------
 CLASS_LABELS = {
     0: "Unlabeled", 1: "Paved Area", 2: "Dirt", 3: "Grass", 
@@ -123,6 +113,9 @@ COLOR_MAP = np.array([
     (210, 180, 140), (255, 215, 0), (128, 0, 0)
 ], dtype=np.uint8)
 
+# ---------------------------------------------------------
+# 3. LOAD MODEL
+# ---------------------------------------------------------
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = ResNetUNet(23).to(DEVICE)
 if os.path.exists('resnetunet_aerial.pth'):
@@ -130,103 +123,134 @@ if os.path.exists('resnetunet_aerial.pth'):
     model.load_state_dict({k.replace('module.', ''): v for k, v in sd.items()})
     model.eval()
 
+transform = transforms.Compose([
+    transforms.Resize((512, 512)), # Best accuracy matches patch size
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
+
 # ---------------------------------------------------------
-# 3. FULL RESOLUTION TILING ENGINE
+# 4. ROUTES
 # ---------------------------------------------------------
-def predict_full_res_tiled(img_pil, patch_size=512, stride=448):
-    """
-    Tiles the image at ITS ORIGINAL RESOLUTION. 
-    Matches the scale the model was trained on.
-    """
-    w, h = img_pil.size
-    
-    img_tensor = transforms.ToTensor()(img_pil).to(DEVICE)
-    mean = torch.tensor([0.485, 0.456, 0.406]).view(3,1,1).to(DEVICE)
-    std = torch.tensor([0.229, 0.224, 0.225]).view(3,1,1).to(DEVICE)
-    img_tensor = (img_tensor - mean) / std
 
-    pad_h = (patch_size - (h - patch_size) % stride) % stride if h > patch_size else patch_size - h
-    pad_w = (patch_size - (w - patch_size) % stride) % stride if w > patch_size else patch_size - w
-    img_tensor = F.pad(img_tensor, (0, pad_w, 0, pad_h))
-    new_h, new_w = img_tensor.shape[1], img_tensor.shape[2]
-
-    # full_mask stores the labels. Use float to handle max voting if needed.
-    full_mask = np.zeros((new_h, new_w), dtype=np.uint8)
-    
-    # Process patches
-    for y in range(0, new_h - patch_size + 1, stride):
-        for x in range(0, new_w - patch_size + 1, stride):
-            patch = img_tensor[:, y:y+patch_size, x:x+patch_size].unsqueeze(0)
-            with torch.no_grad():
-                output = model(patch)
-                pred = torch.argmax(output, dim=1).squeeze(0).cpu().numpy().astype(np.uint8)
-                
-                # Logic: Don't overwrite useful classes (like Person=15) with background (0/1)
-                # We prioritize classes > 4 (objects) over background
-                existing = full_mask[y:y+patch_size, x:x+patch_size]
-                mask_new = (pred > 4) | (existing <= 4)
-                full_mask[y:y+patch_size, x:x+patch_size][mask_new] = pred[mask_new]
-                
-    return full_mask[:h, :w]
-
-# -------------------- ROUTES --------------------
+# Public routes (no login required)
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/register', methods=['GET','POST'])
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/contact')
+def contact():
+    return render_template('Contact.html')
+
+@app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
-        name = request.form['name']
-        email = request.form['email']
-        password = request.form['password']
+    if request.method == 'GET':
+        return render_template('register.html')
+    
+    name = request.form['name']
+    email = request.form['email']
+    password = request.form['password']
+    confirm_password = request.form['confirm_password']
 
-        if User.query.filter_by(email=email).first():
-            flash('Email already exists', 'error')
-            return redirect(url_for('register'))
-
-        hashed = generate_password_hash(password)
-        user = User(name=name, email=email, password=hashed)
-        db.session.add(user)
+    # validations
+    if not name or len(name.strip()) < 2:
+        flash('Name must be at least 2 characters long.', 'error')
+        return redirect('/register')
+    
+    if not email or '@' not in email:
+        flash('Please enter a valid email address.', 'error')
+        return redirect('/register')
+    
+    # password must be at least 8 characters long and a combination of letters and numbers and special characters
+    if len(password) < 8 or not any(char.isdigit() for char in password)\
+          or not any(char.isalpha() for char in password) or not any(not char.isalnum()\
+                                                                      for char in password):
+        flash('Password must be at least 8 characters long and contain letters, numbers, and special characters.', 'error')
+        return redirect('/register')
+    
+    if password != confirm_password:
+        flash('Passwords do not match.', 'error')
+        return redirect('/register')
+    
+    # check if user already exists
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
+        flash('Email already registered. Please log in.', 'error')
+        return redirect('/login')
+    
+    # create new user
+    hashed_password = generate_password_hash(password)
+    new_user = User(
+        name=name.strip(),
+        email=email.strip(),
+        password=hashed_password
+    )
+    try:
+        db.session.add(new_user)
         db.session.commit()
+        flash('Registration successful! Please log in.', 'success')
+        return redirect('/login')
+    except Exception as e:
+        db.session.rollback()
+        flash('An error occurred during registration. Please try again.', 'error')
+        return redirect(url_for('register'))
 
-        flash('Registered successfully', 'success')
-        return redirect(url_for('login'))
-
-    return render_template('register.html')
-
-@app.route('/login', methods=['GET','POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        user = User.query.filter_by(email=request.form['email']).first()
+    if request.method == 'GET':
+        return render_template('login.html')
+    
+    email = request.form['email']
+    password = request.form['password']
+    user = User.query.filter_by(email=email).first()
 
-        if user and check_password_hash(user.password, request.form['password']):
-            login_user(user)
-            session['user_id'] = user.id
-            return redirect(url_for('detector'))
-
-        flash('Invalid credentials', 'error')
-
-    return render_template('login.html')
+    if user and check_password_hash(user.password, password):
+        session['user_id'] = user.id
+        session['user_name'] = user.name
+        flash('Login successful!', 'success')
+        return redirect('/upload')
+    else:
+        flash('Invalid email or password.', 'error')
+        return redirect('/login')
 
 @app.route('/logout')
-@login_required
 def logout():
-    logout_user()
     session.clear()
-    return redirect(url_for('login'))
+    flash('Logged out successfully.', 'success')
+    return redirect('/')
 
-# -------------------- DETECTOR PAGE --------------------
+# Protected routes (login required)
+@app.route('/upload')
 @app.route('/detector')
 @login_required
 def detector():
-    return render_template('detector.html')
+    return render_template('upload.html')
 
-# -------------------- PREDICTION --------------------
-@app.route('/predict', methods=['POST'])
+@app.route('/history')
+@login_required
+def history():
+    return render_template('history.html')
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('Dashboard.html')
+
+@app.route('/support')
+@login_required
+def support():
+    return render_template('support.html')
+
+@app.route('/predict', methods=['GET','POST'])
+@login_required
 def predict():
     file = request.files.get('file')
-    if not file: return redirect('/')
+    if not file: 
+        return redirect('/')
     
     filename = file.filename
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -234,38 +258,37 @@ def predict():
     
     img_pil = Image.open(filepath).convert('RGB')
     orig_w, orig_h = img_pil.size
+    input_tensor = transform(img_pil).unsqueeze(0).to(DEVICE)
     
     start = time.time()
-    # USE FULL RESOLUTION TILING (Matches training scale)
-    mask = predict_full_res_tiled(img_pil)
-    
+    with torch.no_grad():
+        output = model(input_tensor)
+        mask = torch.argmax(output, dim=1).squeeze(0).cpu().numpy()
     inf_time = round((time.time() - start) * 1000, 2)
     
-    # Generate Stats
+    # Generate Legend & Stats
     unique_labels, counts = np.unique(mask, return_counts=True)
     total_pixels = mask.size
     stats = []
     for lbl, count in zip(unique_labels, counts):
         pct = round((count / total_pixels) * 100, 1)
-        if pct < 0.01: continue # Very sensitive for tiny objects
-        stats.append({'name': CLASS_LABELS.get(lbl, "Other"), 'pct': pct, 'color': '#%02x%02x%02x' % tuple(COLOR_MAP[lbl])})
+        color = COLOR_MAP[lbl]
+        hex_color = '#%02x%02x%02x' % (color[0], color[1], color[2])
+        stats.append({'name': CLASS_LABELS.get(lbl, "Other"), 'pct': pct, 'color': hex_color})
     stats = sorted(stats, key=lambda x: x['pct'], reverse=True)
 
     # Prepare Visuals
     mask_rgb = COLOR_MAP[mask]
-    orig_img_cv = cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
-    mask_bgr = cv2.cvtColor(mask_rgb, cv2.COLOR_RGB2BGR)
-    overlay = cv2.addWeighted(orig_img_cv, 0.6, mask_bgr, 0.4, 0)
+    mask_img = cv2.resize(mask_rgb, (orig_w, orig_h), interpolation=cv2.INTER_NEAREST)
     
-    cv2.imwrite(os.path.join(app.config['RESULT_FOLDER'], 'mask_' + filename), mask_bgr)
+    # Create Blended Overlay
+    orig_img = cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
+    overlay = cv2.addWeighted(orig_img, 0.6, cv2.cvtColor(mask_img, cv2.COLOR_RGB2BGR), 0.4, 0)
+    
+    cv2.imwrite(os.path.join(app.config['RESULT_FOLDER'], 'mask_' + filename), cv2.cvtColor(mask_img, cv2.COLOR_RGB2BGR))
     cv2.imwrite(os.path.join(app.config['RESULT_FOLDER'], 'overlay_' + filename), overlay)
     
     return render_template('predict.html', filename=filename, time=inf_time, stats=stats)
 
-@app.route('/upload')
-def upload():
-    return render_template('upload.html')
-
-# -------------------- RUN --------------------
 if __name__ == '__main__':
     app.run(debug=True)
