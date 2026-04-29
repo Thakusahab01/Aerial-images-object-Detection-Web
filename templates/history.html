@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>AerialView Pro — Analysis History & Mission Logs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --red: #FF2D2D;
+            --red2: #FF6B35;
+            --cyan: #00D4FF;
+            --teal: #00FFB3;
+            --gold: #FFD700;
+            --violet: #B44FFF;
+            --bg: #060810;
+            --bg2: #0C0F1A;
+            --bg3: #121626;
+            --panel: #0F1320;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass2: rgba(255, 255, 255, 0.08);
+            --border: rgba(255, 255, 255, 0.08);
+            --border2: rgba(255, 255, 255, 0.14);
+            --text: #E2E8F0;
+            --muted: #94A3B8;
+            --font: 'Inter', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            overflow-x: hidden;
+        }
+
+        ::selection {
+            background: rgba(0, 212, 255, 0.25);
+            color: white;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* NAVIGATION - Updated from about page */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            transition: background 0.4s, border-color 0.4s;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav.scrolled {
+            background: rgba(6, 8, 16, 0.92);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .nav-badge {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--red), var(--red2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 0 20px rgba(255, 45, 45, 0.4);
+            animation: badgePulse 3s ease-in-out infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 45, 45, 0.4); }
+            50% { box-shadow: 0 0 35px rgba(255, 45, 45, 0.7); }
+        }
+
+        .nav-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            text-decoration: none;
+            letter-spacing: 0.02em;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #fff;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-login {
+            padding: 8px 18px;
+            border-radius: 8px;
+            background: transparent;
+            border: 1px solid var(--border2);
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-login:hover {
+            background: var(--glass2);
+            border-color: rgba(0, 212, 255, 0.4);
+            color: #fff;
+        }
+
+        .nav-cta {
+            padding: 8px 20px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--red), var(--red2));
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 45, 45, 0.3);
+            transition: all 0.2s;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 28px rgba(255, 45, 45, 0.5);
+        }
+
+        /* FOOTER - Updated from about page */
+        footer {
+            position: relative;
+            z-index: 2;
+            padding: 40px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-copy {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .footer-links a {
+            font-size: 12px;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #fff;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .nav-links {
+                display: none;
+            }
+            .nav {
+                padding: 0 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .nav-login {
+                display: none;
+            }
+            footer {
+                padding: 28px 20px;
+                flex-direction: column;
+                gap: 14px;
+                text-align: center;
+            }
+        }
+
+        /* Hero Section */
+        .history-hero {
+            position: relative;
+            min-height: 32vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-top: 70px;
+            padding: 50px 24px 30px;
+            z-index: 1;
+        }
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 14px;
+            background: rgba(0, 212, 255, 0.08);
+            border: 1px solid rgba(0, 212, 255, 0.25);
+            border-radius: 20px;
+            font-family: var(--mono);
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--cyan);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        .hero-tag::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--cyan);
+            animation: pulseDot 1.5s ease infinite;
+        }
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        .history-hero h1 {
+            font-size: clamp(2rem, 4.5vw, 3.5rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #fff, var(--cyan), var(--teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+        .history-sub {
+            font-size: 1rem;
+            color: var(--muted);
+            max-width: 550px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Main Content */
+        .history-container {
+            position: relative;
+            z-index: 2;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px 80px;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 28px;
+            justify-content: space-between;
+            background: rgba(15, 19, 32, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px 32px;
+            margin-bottom: 48px;
+            backdrop-filter: blur(8px);
+            flex-wrap: wrap;
+        }
+        .stat-block {
+            text-align: center;
+            flex: 1;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: var(--mono);
+            background: linear-gradient(135deg, var(--cyan), var(--teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        /* Filter & Search */
+        .filter-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 40px;
+            padding: 8px 18px;
+            gap: 8px;
+        }
+        .search-box input {
+            background: transparent;
+            border: none;
+            padding: 8px 0;
+            color: #fff;
+            font-size: 13px;
+            width: 220px;
+            outline: none;
+        }
+        .filter-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        .filter-chip {
+            padding: 6px 16px;
+            border-radius: 40px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-chip.active {
+            background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,255,179,0.1));
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+        .filter-chip:hover {
+            background: var(--glass2);
+            border-color: rgba(0,212,255,0.4);
+        }
+
+        /* History Grid */
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+            margin-top: 16px;
+        }
+        .history-card {
+            background: rgba(15, 19, 32, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+        }
+        .history-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(0, 212, 255, 0.5);
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.5);
+        }
+        .card-img {
+            height: 180px;
+            overflow: hidden;
+            position: relative;
+            background: var(--bg2);
+        }
+        .card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s;
+        }
+        .history-card:hover .card-img img {
+            transform: scale(1.03);
+        }
+        .card-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-family: var(--mono);
+            font-weight: 600;
+            border-left: 2px solid var(--cyan);
+        }
+        .card-content {
+            padding: 18px 20px 20px;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .date {
+            font-size: 11px;
+            font-family: var(--mono);
+            color: var(--muted);
+        }
+        .detection-stats {
+            display: flex;
+            gap: 12px;
+            margin: 12px 0;
+            flex-wrap: wrap;
+        }
+        .det-badge {
+            background: rgba(0,212,255,0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--cyan);
+        }
+        .det-badge.red {
+            background: rgba(255,45,45,0.1);
+            color: #FF6B35;
+        }
+        .confidence {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--teal);
+        }
+        .view-details {
+            margin-top: 14px;
+            font-size: 12px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+        .history-card:hover .view-details {
+            color: var(--cyan);
+            gap: 10px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: rgba(15, 19, 32, 0.4);
+            border-radius: 32px;
+            border: 1px dashed var(--border);
+        }
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.6;
+        }
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+        .empty-state p {
+            color: var(--muted);
+            margin-bottom: 24px;
+        }
+        .btn-primary-small {
+            background: linear-gradient(135deg, var(--red), var(--red2));
+            padding: 10px 24px;
+            border-radius: 40px;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+            display: inline-block;
+            transition: 0.2s;
+        }
+        .btn-primary-small:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255,45,45,0.4);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(12px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            max-width: 800px;
+            width: 100%;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            overflow: hidden;
+            animation: modalFade 0.2s ease;
+        }
+        @keyframes modalFade {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-img {
+            width: 100%;
+            max-height: 360px;
+            object-fit: contain;
+            background: #000;
+        }
+        .modal-body {
+            padding: 24px;
+        }
+        .close-modal {
+            float: right;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--muted);
+        }
+        .json-preview {
+            background: var(--bg3);
+            border-radius: 16px;
+            padding: 16px;
+            font-family: var(--mono);
+            font-size: 11px;
+            overflow-x: auto;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .history-container { padding: 0 20px 60px; }
+            .stats-bar { flex-direction: column; gap: 16px; }
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: 0.5s ease;
+        }
+        .reveal.in {
+            opacity: 1;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV - Updated from about page -->
+<nav class="nav" id="nav">
+    <a class="nav-brand" href="{{ url_for('index') }}">
+        <div class="nav-badge">🛰</div>
+        <span class="nav-title">AerialView Pro</span>
+    </a>
+    <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('detector') }}">Upload</a></li>
+        <li><a href="{{ url_for('about') }}">About</a></li>
+        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('history') }}" class="active">History</a></li>
+        <li><a href="{{ url_for('support') }}">Support</a></li>
+        <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+    </ul>
+    <div class="nav-right">
+        <a class="nav-login" href="{{ url_for('login') }}">Log In</a>
+        <a class="nav-cta" href="{{ url_for('register') }}">Sign Up Free</a>
+    </div>
+</nav>
+
+<section class="history-hero">
+    <div style="position: relative; z-index: 2;">
+        <div class="hero-tag">MISSION LOG · INTELLIGENCE ARCHIVE</div>
+        <h1>Analysis History</h1>
+        <p class="history-sub">Complete record of aerial detections, processed images, and AI-generated insights</p>
+    </div>
+</section>
+
+<div class="history-container">
+    <!-- Stats Summary -->
+    <div class="stats-bar reveal">
+        <div class="stat-block"><div class="stat-number" id="totalCount">6</div><div class="stat-label">Total Analyses</div></div>
+        <div class="stat-block"><div class="stat-number" id="totalDetections">764</div><div class="stat-label">Objects Detected</div></div>
+        <div class="stat-block"><div class="stat-number" id="avgConf">91%</div><div class="stat-label">Avg Confidence</div></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar reveal delay1">
+        <div class="search-box">
+            <span>🔍</span>
+            <input type="text" id="searchInput" placeholder="Search by filename, sector...">
+        </div>
+        <div class="filter-buttons">
+            <div class="filter-chip active" data-filter="all">All</div>
+            <div class="filter-chip" data-filter="disaster">Disaster</div>
+            <div class="filter-chip" data-filter="agriculture">Agriculture</div>
+            <div class="filter-chip" data-filter="urban">Urban</div>
+            <div class="filter-chip" data-filter="defense">Defense</div>
+        </div>
+    </div>
+
+    <!-- History Grid -->
+    <div id="historyGrid" class="history-grid reveal delay2">
+        <!-- History cards will be populated via JS -->
+    </div>
+
+    <!-- Empty State (hidden by default) -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+        <div class="empty-icon">🛰️</div>
+        <h3>No analysis records found</h3>
+        <p>Upload aerial images to start building your intelligence history.</p>
+        <a href="{{ url_for('detector') }}" class="btn-primary-small">Launch Detector →</a>
+    </div>
+</div>
+
+<!-- Modal for details -->
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <div style="padding: 12px 20px 0; text-align: right;"><span class="close-modal">×</span></div>
+        <img id="modalImage" class="modal-img" alt="Full preview">
+        <div class="modal-body">
+            <h3 id="modalTitle" style="margin-bottom: 8px;"></h3>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;">
+                <span id="modalDate" style="font-family: monospace; font-size: 12px; color: var(--muted);"></span>
+                <span id="modalSector" style="background: rgba(0,212,255,0.1); padding: 2px 8px; border-radius: 20px; font-size: 11px;"></span>
+            </div>
+            <div><strong>📊 Detection Summary</strong></div>
+            <div id="modalDetections" style="margin: 12px 0;"></div>
+            <div><strong>📄 Full Metadata (JSON)</strong></div>
+            <div id="modalJson" class="json-preview"></div>
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER - Updated from about page -->
+<footer>
+    <div class="footer-brand">
+        <div class="nav-badge" style="width:28px;height:28px;font-size:13px;">🛰</div>
+        <span style="font-size:13px;font-weight:600;color:#fff;">AerialView Pro</span>
+    </div>
+    <span class="footer-copy">© 2024 AerialView Detector Pro · Multi-Sector Edition</span>
+    <div class="footer-links">
+        <a href="#">Documentation</a>
+        <a href="#">API</a>
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('register') }}">Register</a>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Simulated database of analyses (SQLAlchemy style)
+    let analysisHistory = [
+        { id: 1, filename: "hurricane_damage_01.jpg", imageUrl: "https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=500&q=80", sector: "disaster", date: "2025-03-18T09:24:00Z", detections: [{type:"Flooded Area", count:4, confidence:96},{type:"Damaged Structure", count:12, confidence:88}], totalObjects: 16, avgConfidence: 92.0, algorithm: "PixelSeg v2.3" },
+        { id: 2, filename: "crop_health_spring.jpg", imageUrl: "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?w=500&q=80", sector: "agriculture", date: "2025-03-20T14:12:00Z", detections: [{type:"Healthy Vegetation", count:245, confidence:94},{type:"Stress Areas", count:18, confidence:82}], totalObjects: 263, avgConfidence: 88.0, algorithm: "MultiSpec NDVI" },
+        { id: 3, filename: "urban_infra_detection.png", imageUrl: "https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=500&q=80", sector: "urban", date: "2025-03-22T11:05:00Z", detections: [{type:"Vehicles", count:87, confidence:91},{type:"Buildings", count:34, confidence:89}], totalObjects: 121, avgConfidence: 90.0, algorithm: "YOLO-Aerial" },
+        { id: 4, filename: "military_convoy_analysis.jpg", imageUrl: "https://images.unsplash.com/photo-1543253687-c931c8e01820?w=500&q=80", sector: "defense", date: "2025-03-15T06:30:00Z", detections: [{type:"Armored Vehicles", count:9, confidence:97},{type:"Personnel", count:24, confidence:85}], totalObjects: 33, avgConfidence: 91.0, algorithm: "DefenseNet" },
+        { id: 5, filename: "wildfire_perimeter_scan.jpg", imageUrl: "https://images.unsplash.com/photo-1560436603-ca513fa55e0e?w=500&q=80", sector: "disaster", date: "2025-03-10T19:45:00Z", detections: [{type:"Fire Front", count:2, confidence:93},{type:"Smoke Plume", count:5, confidence:89}], totalObjects: 7, avgConfidence: 91.0, algorithm: "ThermalEdge" },
+        { id: 6, filename: "precision_farm_irrigation.jpg", imageUrl: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=500&q=80", sector: "agriculture", date: "2025-03-25T07:20:00Z", detections: [{type:"Irrigation Zones", count:12, confidence:95},{type:"Crop Rows", count:312, confidence:87}], totalObjects: 324, avgConfidence: 91.0, algorithm: "AgriScan" }
+    ];
+
+    let currentFilter = "all";
+    let searchTerm = "";
+
+    function updateStats() {
+        document.getElementById('totalCount').innerText = analysisHistory.length;
+        const totalDet = analysisHistory.reduce((sum, item) => sum + item.totalObjects, 0);
+        document.getElementById('totalDetections').innerText = totalDet;
+        const avgGlobal = analysisHistory.reduce((sum, item) => sum + item.avgConfidence, 0) / analysisHistory.length;
+        document.getElementById('avgConf').innerText = Math.round(avgGlobal) + "%";
+    }
+
+    function renderHistory() {
+        const filtered = analysisHistory.filter(item => {
+            const matchFilter = currentFilter === "all" || item.sector === currentFilter;
+            const matchSearch = item.filename.toLowerCase().includes(searchTerm.toLowerCase()) || item.sector.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchFilter && matchSearch;
+        });
+        const grid = document.getElementById('historyGrid');
+        const empty = document.getElementById('emptyState');
+        if (filtered.length === 0) {
+            grid.style.display = 'none';
+            empty.style.display = 'block';
+            return;
+        }
+        grid.style.display = 'grid';
+        empty.style.display = 'none';
+        grid.innerHTML = filtered.map(item => `
+            <div class="history-card" data-id="${item.id}">
+                <div class="card-img">
+                    <img src="${item.imageUrl}" alt="${item.filename}" loading="lazy">
+                    <div class="card-badge">${item.sector.toUpperCase()}</div>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">
+                        <span>${item.filename.length > 28 ? item.filename.slice(0,25)+'...' : item.filename}</span>
+                        <span class="date">${new Date(item.date).toLocaleDateString()}</span>
+                    </div>
+                    <div class="detection-stats">
+                        ${item.detections.slice(0,2).map(d => `<span class="det-badge">${d.type}: ${d.count}</span>`).join('')}
+                        ${item.detections.length > 2 ? `<span class="det-badge">+${item.detections.length-2} more</span>` : ''}
+                    </div>
+                    <div class="confidence">⚡ Avg conf: ${item.avgConfidence}% · ${item.totalObjects} objects</div>
+                    <div class="view-details">🔍 Click to view full intelligence report →</div>
+                </div>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('.history-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const id = parseInt(card.getAttribute('data-id'));
+                const record = analysisHistory.find(r => r.id === id);
+                if (record) openModal(record);
+            });
+        });
+    }
+    
+    function openModal(record) {
+        const modal = document.getElementById('detailModal');
+        document.getElementById('modalImage').src = record.imageUrl;
+        document.getElementById('modalTitle').innerText = record.filename;
+        document.getElementById('modalDate').innerText = new Date(record.date).toLocaleString();
+        document.getElementById('modalSector').innerHTML = `🛸 Sector: ${record.sector.toUpperCase()}`;
+        const detHtml = `<ul style="list-style: none; display: flex; flex-wrap: wrap; gap: 12px;">${record.detections.map(d => `<li style="background:var(--panel); padding:6px 14px; border-radius:40px;">🔍 ${d.type}: ${d.count} (conf ${d.confidence}%)</li>`).join('')}</ul>`;
+        document.getElementById('modalDetections').innerHTML = detHtml;
+        const meta = {
+            id: record.id,
+            filename: record.filename,
+            sector: record.sector,
+            timestamp: record.date,
+            algorithm: record.algorithm,
+            total_objects: record.totalObjects,
+            average_confidence: record.avgConfidence,
+            detection_list: record.detections
+        };
+        document.getElementById('modalJson').innerHTML = JSON.stringify(meta, null, 2);
+        modal.style.display = 'flex';
+    }
+    
+    function closeModal() {
+        document.getElementById('detailModal').style.display = 'none';
+    }
+    
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            currentFilter = chip.getAttribute('data-filter');
+            renderHistory();
+        });
+    });
+    
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        searchTerm = e.target.value;
+        renderHistory();
+    });
+    
+    document.querySelector('.close-modal').addEventListener('click', closeModal);
+    window.addEventListener('click', (e) => { if (e.target === document.getElementById('detailModal')) closeModal(); });
+    
+    // Canvas background particles
+    (function() {
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+        resize(); window.addEventListener('resize', resize);
+        const parts = Array.from({ length: 70 }, () => ({ x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.6 + 0.3, vx: (Math.random() - 0.5) * 0.2, vy: (Math.random() - 0.5) * 0.2, alpha: Math.random() * 0.4 + 0.1, hue: Math.random() < 0.6 ? 185 : 12 }));
+        function draw() { 
+            ctx.clearRect(0, 0, w, h); 
+            parts.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fillStyle = `hsla(${p.hue},85%,65%,${p.alpha})`; ctx.fill(); p.x += p.vx; p.y += p.vy; if(p.x<0||p.x>w) p.vx*=-1; if(p.y<0||p.y>h) p.vy*=-1; }); 
+            for(let i=0;i<parts.length;i++) for(let j=i+1;j<parts.length;j++) { const dx=parts[i].x-parts[j].x, dy=parts[i].y-parts[j].y, d=Math.hypot(dx,dy); if(d<100) { ctx.beginPath(); ctx.moveTo(parts[i].x,parts[i].y); ctx.lineTo(parts[j].x,parts[j].y); ctx.strokeStyle=`rgba(0,212,255,${0.06*(1-d/100)})`; ctx.lineWidth=0.4; ctx.stroke(); } } 
+            requestAnimationFrame(draw);
+        }
+        draw();
+    })();
+
+    // Nav scroll effect
+    window.addEventListener('scroll', () => {
+        const nav = document.getElementById('nav');
+        if (nav) nav.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // Reveal animations
+    const observer = new IntersectionObserver(entries => entries.forEach(e => e.isIntersecting && e.target.classList.add('in')), { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    
+    updateStats();
+    renderHistory();
+</script>
+
+</body>
+</html>

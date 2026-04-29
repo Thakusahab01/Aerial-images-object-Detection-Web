@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AerialView Pro | Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --red: #FF2D2D;
+            --red2: #FF6B35;
+            --cyan: #00D4FF;
+            --teal: #00FFB3;
+            --gold: #FFD700;
+            --violet: #B44FFF;
+            --bg: #060810;
+            --bg2: #0C0F1A;
+            --bg3: #121626;
+            --panel: #0F1320;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass2: rgba(255, 255, 255, 0.08);
+            --border: rgba(255, 255, 255, 0.08);
+            --border2: rgba(255, 255, 255, 0.14);
+            --text: #E2E8F0;
+            --muted: #64748B;
+            --font: 'Inter', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            overflow-x: hidden;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* NAVIGATION - Updated from about page */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            transition: background 0.4s, border-color 0.4s;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav.scrolled {
+            background: rgba(6, 8, 16, 0.92);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .nav-badge {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--red), var(--red2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 0 20px rgba(255, 45, 45, 0.4);
+            animation: badgePulse 3s ease-in-out infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 45, 45, 0.4); }
+            50% { box-shadow: 0 0 35px rgba(255, 45, 45, 0.7); }
+        }
+
+        .nav-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            text-decoration: none;
+            letter-spacing: 0.02em;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #fff;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-login {
+            padding: 8px 18px;
+            border-radius: 8px;
+            background: transparent;
+            border: 1px solid var(--border2);
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-login:hover {
+            background: var(--glass2);
+            border-color: rgba(0, 212, 255, 0.4);
+            color: #fff;
+        }
+
+        .nav-cta {
+            padding: 8px 20px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--red), var(--red2));
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 45, 45, 0.3);
+            transition: all 0.2s;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 28px rgba(255, 45, 45, 0.5);
+        }
+
+        /* FOOTER - Updated from about page */
+        footer {
+            position: relative;
+            z-index: 2;
+            padding: 40px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-copy {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .footer-links a {
+            font-size: 12px;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #fff;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .nav-links {
+                display: none;
+            }
+            .nav {
+                padding: 0 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .nav-login {
+                display: none;
+            }
+            footer {
+                padding: 28px 20px;
+                flex-direction: column;
+                gap: 14px;
+                text-align: center;
+            }
+        }
+
+        /* Dashboard Container */
+        .dashboard-container {
+            position: relative;
+            z-index: 2;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 100px 40px 60px;
+        }
+
+        .welcome-header {
+            margin-bottom: 40px;
+        }
+        .welcome-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+        .welcome-header p {
+            color: var(--muted);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(8px);
+            text-align: center;
+        }
+        .stat-card:hover {
+            border-color: var(--cyan);
+        }
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        .stat-value {
+            font-size: 36px;
+            font-weight: 800;
+            font-family: var(--mono);
+            color: var(--cyan);
+            margin-bottom: 8px;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        /* Chart Section */
+        .chart-section {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 40px;
+        }
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--cyan);
+            padding-left: 12px;
+        }
+
+        /* Recent Table */
+        .recent-section {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            color: var(--cyan);
+            font-size: 12px;
+            font-weight: 600;
+        }
+        td {
+            color: var(--text);
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV - Updated from about page -->
+<nav class="nav" id="nav">
+    <a class="nav-brand" href="{{ url_for('index') }}">
+        <div class="nav-badge">🛰</div>
+        <span class="nav-title">AerialView Pro</span>
+    </a>
+    <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('detector') }}">Upload</a></li>
+        <li><a href="{{ url_for('about') }}">About</a></li>
+        <li><a href="{{ url_for('dashboard') }}" class="active">Dashboard</a></li>
+        <li><a href="{{ url_for('history') }}">History</a></li>
+        <li><a href="{{ url_for('support') }}">Support</a></li>
+        <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+    </ul>
+    <div class="nav-right">
+        <a class="nav-login" href="{{ url_for('login') }}">Log In</a>
+        <a class="nav-cta" href="{{ url_for('register') }}">Sign Up Free</a>
+    </div>
+</nav>
+
+<div class="dashboard-container">
+    <div class="welcome-header">
+        <h1>Welcome back, {{ session.get('user_name', 'Analyst') }}! 👋</h1>
+        <p>Your aerial intelligence dashboard - monitor detections and mission insights</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-value" id="totalAnalyses">0</div>
+            <div class="stat-label">Total Analyses</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-value" id="totalObjects">0</div>
+            <div class="stat-label">Objects Detected</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-value" id="avgConfidence">0%</div>
+            <div class="stat-label">Avg Confidence</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🛰️</div>
+            <div class="stat-value" id="activeSectors">4</div>
+            <div class="stat-label">Active Sectors</div>
+        </div>
+    </div>
+
+    <div class="chart-section">
+        <div class="chart-title">📈 Detection Trends</div>
+        <canvas id="trendsChart" style="max-height: 300px; width: 100%;"></canvas>
+    </div>
+
+    <div class="recent-section">
+        <div class="chart-title">📋 Recent Analyses</div>
+        <table>
+            <thead>
+                <tr><th>Filename</th><th>Sector</th><th>Objects</th><th>Confidence</th><th>Date</th></tr>
+            </thead>
+            <tbody id="recentTable">
+                <tr><td colspan="5" style="text-align:center">No analyses yet. Upload your first image!</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- FOOTER - Updated from about page -->
+<footer>
+    <div class="footer-brand">
+        <div class="nav-badge" style="width:28px;height:28px;font-size:13px;">🛰</div>
+        <span style="font-size:13px;font-weight:600;color:#fff;">AerialView Pro</span>
+    </div>
+    <span class="footer-copy">© 2024 AerialView Detector Pro · Multi-Sector Edition</span>
+    <div class="footer-links">
+        <a href="#">Documentation</a>
+        <a href="#">API</a>
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('register') }}">Register</a>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Canvas background particles
+    (function() {
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+        resize(); window.addEventListener('resize', resize);
+        const parts = Array.from({ length: 70 }, () => ({ x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.6 + 0.3, vx: (Math.random() - 0.5) * 0.2, vy: (Math.random() - 0.5) * 0.2, alpha: Math.random() * 0.4 + 0.1, hue: Math.random() < 0.6 ? 185 : 12 }));
+        function draw() { 
+            ctx.clearRect(0, 0, w, h); 
+            parts.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fillStyle = `hsla(${p.hue},85%,65%,${p.alpha})`; ctx.fill(); p.x += p.vx; p.y += p.vy; if(p.x<0||p.x>w) p.vx*=-1; if(p.y<0||p.y>h) p.vy*=-1; }); 
+            for(let i=0;i<parts.length;i++) for(let j=i+1;j<parts.length;j++) { const dx=parts[i].x-parts[j].x, dy=parts[i].y-parts[j].y, d=Math.hypot(dx,dy); if(d<100) { ctx.beginPath(); ctx.moveTo(parts[i].x,parts[i].y); ctx.lineTo(parts[j].x,parts[j].y); ctx.strokeStyle=`rgba(0,212,255,${0.06*(1-d/100)})`; ctx.lineWidth=0.4; ctx.stroke(); } } 
+            requestAnimationFrame(draw);
+        }
+        draw();
+    })();
+
+    // Nav scroll effect
+    window.addEventListener('scroll', () => {
+        const nav = document.getElementById('nav');
+        if (nav) nav.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // Fetch stats from API
+    fetch('/api/user/stats')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('totalAnalyses').innerText = data.total_analyses || 0;
+            document.getElementById('totalObjects').innerText = data.total_objects || 0;
+            document.getElementById('avgConfidence').innerText = (data.avg_confidence || 0) + '%';
+        })
+        .catch(err => console.log('Stats not available yet'));
+
+    // Chart
+    const ctx = document.getElementById('trendsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+            datasets: [{ label: 'Objects Detected', data: [12, 19, 15, 27, 22, 34, 42], borderColor: '#00D4FF', backgroundColor: 'rgba(0,212,255,0.1)', tension: 0.3, fill: true }]
+        },
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: '#94A3B8' } } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8' } }, x: { ticks: { color: '#94A3B8' } } } }
+    });
+</script>
+</body>
+</html>

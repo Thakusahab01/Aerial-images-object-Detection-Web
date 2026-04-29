@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>AerialView Pro | Mission Support Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --red: #FF2D2D;
+            --red2: #FF6B35;
+            --cyan: #00D4FF;
+            --teal: #00FFB3;
+            --gold: #FFD700;
+            --violet: #B44FFF;
+            --bg: #060810;
+            --bg2: #0C0F1A;
+            --bg3: #121626;
+            --panel: #0F1320;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass2: rgba(255, 255, 255, 0.08);
+            --border: rgba(255, 255, 255, 0.08);
+            --border2: rgba(255, 255, 255, 0.14);
+            --text: #E2E8F0;
+            --muted: #64748B;
+            --faint: #2A3042;
+            --font: 'Inter', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            overflow-x: hidden;
+        }
+
+        ::selection {
+            background: rgba(0, 212, 255, 0.25);
+            color: white;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* NAVIGATION - Updated from about page */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            transition: background 0.4s, border-color 0.4s;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav.scrolled {
+            background: rgba(6, 8, 16, 0.92);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .nav-badge {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--red), var(--red2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 0 20px rgba(255, 45, 45, 0.4);
+            animation: badgePulse 3s ease-in-out infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 45, 45, 0.4); }
+            50% { box-shadow: 0 0 35px rgba(255, 45, 45, 0.7); }
+        }
+
+        .nav-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            text-decoration: none;
+            letter-spacing: 0.02em;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #fff;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-login {
+            padding: 8px 18px;
+            border-radius: 8px;
+            background: transparent;
+            border: 1px solid var(--border2);
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-login:hover {
+            background: var(--glass2);
+            border-color: rgba(0, 212, 255, 0.4);
+            color: #fff;
+        }
+
+        .nav-cta {
+            padding: 8px 20px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--red), var(--red2));
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 45, 45, 0.3);
+            transition: all 0.2s;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 28px rgba(255, 45, 45, 0.5);
+        }
+
+        /* FOOTER - Updated from about page */
+        footer {
+            position: relative;
+            z-index: 2;
+            padding: 40px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-copy {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .footer-links a {
+            font-size: 12px;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #fff;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .nav-links {
+                display: none;
+            }
+            .nav {
+                padding: 0 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .nav-login {
+                display: none;
+            }
+            footer {
+                padding: 28px 20px;
+                flex-direction: column;
+                gap: 14px;
+                text-align: center;
+            }
+        }
+
+        /* Main Container */
+        .support-container {
+            position: relative;
+            z-index: 2;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 100px 40px 60px;
+        }
+
+        /* Hero Section */
+        .support-hero {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 14px;
+            background: rgba(0, 212, 255, 0.08);
+            border: 1px solid rgba(0, 212, 255, 0.25);
+            border-radius: 20px;
+            font-family: var(--mono);
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--cyan);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        .hero-tag::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--cyan);
+            animation: pulseDot 1.5s ease infinite;
+        }
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        .support-hero h1 {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, var(--cyan), var(--teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+        .support-hero p {
+            color: var(--muted);
+            font-size: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 212, 255, 0.08);
+            border: 1px solid rgba(0, 212, 255, 0.25);
+            padding: 8px 20px;
+            border-radius: 40px;
+            margin-top: 20px;
+            font-family: var(--mono);
+            font-size: 11px;
+        }
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--teal);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(1.2); }
+        }
+
+        /* Search Section */
+        .search-section {
+            background: var(--panel);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 60px;
+            padding: 8px 8px 8px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 700px;
+            margin: 0 auto 50px;
+        }
+        .search-section i {
+            color: var(--cyan);
+            font-size: 18px;
+        }
+        .search-section input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 16px 0;
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            font-family: var(--font);
+        }
+        .search-section input::placeholder {
+            color: var(--muted);
+        }
+        .search-btn {
+            background: linear-gradient(135deg, var(--red), var(--red2));
+            border: none;
+            padding: 12px 28px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .search-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255, 45, 45, 0.4);
+        }
+
+        /* Quick Support Cards */
+        .quick-support {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+        .support-card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .support-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--cyan);
+            background: rgba(0, 212, 255, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        .support-card i {
+            font-size: 40px;
+            background: linear-gradient(135deg, var(--cyan), var(--teal));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 16px;
+        }
+        .support-card h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        .support-card p {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        /* Knowledge Base Grid */
+        .kb-section {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 40px;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            border-left: 3px solid var(--cyan);
+            padding-left: 16px;
+        }
+        .card-header i {
+            font-size: 24px;
+            color: var(--cyan);
+        }
+        .card-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .kb-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .kb-article {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .kb-article:hover {
+            border-color: var(--cyan);
+            transform: translateY(-3px);
+        }
+        .kb-article i {
+            font-size: 28px;
+            background: linear-gradient(135deg, var(--cyan), var(--teal));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 12px;
+        }
+        .kb-article h4 {
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        .kb-article p {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+        .read-more {
+            color: var(--cyan);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Modal for Knowledge Base */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 32px;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--muted);
+            transition: 0.2s;
+        }
+        .modal-close:hover {
+            color: var(--red);
+        }
+        .modal-content h2 {
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff, var(--cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .modal-content h3 {
+            margin: 20px 0 10px;
+            color: var(--cyan);
+        }
+        .modal-content p {
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+        .modal-content ul, .modal-content ol {
+            color: var(--muted);
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+        .modal-content li {
+            margin: 8px 0;
+        }
+        .modal-content code {
+            background: var(--bg2);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--cyan);
+        }
+
+        /* Contact Channels */
+        .contact-channels {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .channel {
+            text-align: center;
+            padding: 20px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            transition: 0.2s;
+        }
+        .channel:hover {
+            border-color: var(--cyan);
+        }
+        .channel i {
+            font-size: 30px;
+            background: linear-gradient(135deg, var(--cyan), var(--teal));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+        }
+        .channel h4 {
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        .channel p {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        /* Chatbot Widget */
+        .chatbot-widget {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+        .chatbot-toggle {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, var(--red), var(--red2));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(255, 45, 45, 0.5);
+            transition: all 0.3s;
+            animation: floatGlow 2s ease-in-out infinite;
+        }
+        @keyframes floatGlow {
+            0%, 100% { transform: translateY(0); box-shadow: 0 0 25px rgba(255, 45, 45, 0.5); }
+            50% { transform: translateY(-5px); box-shadow: 0 0 35px rgba(255, 45, 45, 0.8); }
+        }
+        .chatbot-toggle:hover {
+            transform: scale(1.05);
+        }
+        .chatbot-toggle i {
+            font-size: 30px;
+            color: white;
+        }
+        .chatbot-container {
+            position: fixed;
+            bottom: 110px;
+            right: 30px;
+            width: 380px;
+            height: 500px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chatbot-header {
+            background: linear-gradient(135deg, var(--red), var(--red2));
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chatbot-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .chatbot-header i {
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .chatbot-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .message {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 16px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .bot-message {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .user-message {
+            background: linear-gradient(135deg, var(--red), var(--red2));
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .chatbot-input {
+            display: flex;
+            padding: 12px;
+            border-top: 1px solid var(--border);
+            gap: 10px;
+        }
+        .chatbot-input input {
+            flex: 1;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 10px 16px;
+            color: var(--text);
+            font-family: var(--font);
+            outline: none;
+        }
+        .chatbot-input button {
+            background: linear-gradient(135deg, var(--red), var(--red2));
+            border: none;
+            border-radius: 20px;
+            padding: 10px 18px;
+            color: white;
+            cursor: pointer;
+        }
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 8px 12px;
+        }
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background: var(--cyan);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
+        @media (max-width: 1000px) {
+            .quick-support { grid-template-columns: repeat(2, 1fr); }
+            .kb-grid { grid-template-columns: 1fr; }
+            .contact-channels { grid-template-columns: 1fr; }
+            .support-container { padding: 90px 20px 40px; }
+            .support-hero h1 { font-size: 32px; }
+            .chatbot-container { width: 320px; right: 20px; }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: 0.5s ease;
+        }
+        .reveal.in {
+            opacity: 1;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV - Updated from about page -->
+<nav class="nav" id="nav">
+    <a class="nav-brand" href="{{ url_for('index') }}">
+        <div class="nav-badge">🛰</div>
+        <span class="nav-title">AerialView Pro</span>
+    </a>
+    <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('detector') }}">Upload</a></li>
+        <li><a href="{{ url_for('about') }}">About</a></li>
+        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('history') }}">History</a></li>
+        <li><a href="{{ url_for('support') }}" class="active">Support</a></li>
+        <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+    </ul>
+    <div class="nav-right">
+        <a class="nav-login" href="{{ url_for('login') }}">Log In</a>
+        <a class="nav-cta" href="{{ url_for('register') }}">Sign Up Free</a>
+    </div>
+</nav>
+
+<div class="support-container">
+    <!-- Hero Section -->
+    <div class="support-hero reveal">
+        <div class="hero-tag">MISSION SUPPORT CENTER</div>
+        <h1>We're Here to Help</h1>
+        <p>24/7 technical assistance, knowledge base, and AI-powered chatbot for instant answers</p>
+        <div class="status-badge">
+            <div class="pulse-dot"></div>
+            <span>ALL SYSTEMS OPERATIONAL · RESPONSE TIME < 2 HOURS</span>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-section reveal delay1">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Search knowledge base articles...">
+        <button class="search-btn" onclick="searchKnowledgeBase()">Search</button>
+    </div>
+
+    <!-- Quick Support Cards -->
+    <div class="quick-support reveal delay2">
+        <div class="support-card" onclick="document.getElementById('faqSection').scrollIntoView({behavior:'smooth'})">
+            <i class="fas fa-question-circle"></i>
+            <h3>FAQs</h3>
+            <p>Common questions & answers</p>
+        </div>
+        <div class="support-card" onclick="openChatbot()">
+            <i class="fas fa-robot"></i>
+            <h3>AI Assistant</h3>
+            <p>Chat with our support bot</p>
+        </div>
+        <div class="support-card" onclick="window.location.href='mailto:support@aerialview.ai'">
+            <i class="fas fa-envelope"></i>
+            <h3>Email Us</h3>
+            <p>support@aerialview.ai</p>
+        </div>
+        <div class="support-card" onclick="showTicketForm()">
+            <i class="fas fa-ticket-alt"></i>
+            <h3>Submit Ticket</h3>
+            <p>Create support request</p>
+        </div>
+    </div>
+
+    <!-- Knowledge Base Section -->
+    <div class="kb-section reveal delay3">
+        <div class="card-header">
+            <i class="fas fa-book-open"></i>
+            <h2>Knowledge Base</h2>
+        </div>
+        <div class="kb-grid" id="kbGrid">
+            <!-- Articles will be populated via JS -->
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="kb-section reveal delay4" id="faqSection">
+        <div class="card-header">
+            <i class="fas fa-question-circle"></i>
+            <h2>Frequently Asked Questions</h2>
+        </div>
+        <div id="faqContainer"></div>
+    </div>
+
+    <!-- Contact Channels -->
+    <div class="contact-channels reveal delay5">
+        <div class="channel">
+            <i class="fas fa-phone-alt"></i>
+            <h4>Emergency Hotline</h4>
+            <p>+1 (888) 430-AERO</p>
+            <p style="font-size: 10px;">24/7 critical incidents</p>
+        </div>
+        <div class="channel">
+            <i class="fab fa-discord"></i>
+            <h4>Discord Community</h4>
+            <p>Join our developer community</p>
+            <p style="font-size: 10px;">discord.gg/aerialview</p>
+        </div>
+        <div class="channel">
+            <i class="fab fa-github"></i>
+            <h4>GitHub Support</h4>
+            <p>Open issues & feature requests</p>
+            <p style="font-size: 10px;">github.com/aerialview</p>
+        </div>
+    </div>
+</div>
+
+<!-- Ticket Modal -->
+<div id="ticketModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal('ticketModal')">&times;</span>
+        <h2>Submit Support Ticket</h2>
+        <form id="ticketForm">
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Full Name</label>
+                <input type="text" id="ticketName" required style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:white;">
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Email</label>
+                <input type="email" id="ticketEmail" required style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:white;">
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Issue Type</label>
+                <select id="ticketType" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:white;">
+                    <option>Technical Issue</option><option>Billing Question</option><option>Feature Request</option><option>API Integration</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Message</label>
+                <textarea id="ticketMessage" rows="4" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:white;"></textarea>
+            </div>
+            <button type="submit" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--red),var(--red2));border:none;border-radius:8px;color:white;font-weight:600;cursor:pointer;">Submit Ticket</button>
+        </form>
+    </div>
+</div>
+
+<!-- Chatbot -->
+<div class="chatbot-widget">
+    <div class="chatbot-toggle" onclick="toggleChatbot()">
+        <i class="fas fa-comment-dots"></i>
+    </div>
+    <div class="chatbot-container" id="chatbotContainer">
+        <div class="chatbot-header">
+            <h3><i class="fas fa-robot"></i> AerialView AI Assistant</h3>
+            <i class="fas fa-times" onclick="toggleChatbot()"></i>
+        </div>
+        <div class="chatbot-messages" id="chatMessages">
+            <div class="message bot-message">👋 Hello! I'm your AerialView AI assistant. Ask me anything about aerial detection, algorithms, sectors, or how to use the platform!</div>
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="chatInput" placeholder="Type your question..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER - Updated from about page -->
+<footer>
+    <div class="footer-brand">
+        <div class="nav-badge" style="width:28px;height:28px;font-size:13px;">🛰</div>
+        <span style="font-size:13px;font-weight:600;color:#fff;">AerialView Pro</span>
+    </div>
+    <span class="footer-copy">© 2024 AerialView Detector Pro · Multi-Sector Edition</span>
+    <div class="footer-links">
+        <a href="#">Documentation</a>
+        <a href="#">API</a>
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('register') }}">Register</a>
+    </div>
+</footer>
+
+<script>
+    // Knowledge Base Articles Data
+    const knowledgeBase = [
+        { id: 1, icon: "fa-rocket", title: "Getting Started Guide", desc: "Learn how to upload, analyze, and interpret aerial imagery", content: "<h3>Quick Start Guide</h3><p>Welcome to AerialView Pro! Follow these steps to start your first analysis:</p><ol><li>Create an account or log in</li><li>Navigate to the Upload page</li><li>Select your aerial image (JPEG, PNG, TIFF supported)</li><li>Choose your sector (Disaster, Agriculture, Urban, or Defense)</li><li>Click 'Analyze' and wait for AI processing (&lt;1 second)</li><li>View detection results with confidence scores</li></ol><p>Pro tip: For best results, use high-resolution images (min 1280x720).</p>" },
+        { id: 2, icon: "fa-code", title: "API Documentation", desc: "Complete reference for integrating AerialView Pro", content: "<h3>REST API Integration</h3><p>Our API allows you to integrate aerial detection into your applications.</p><h4>Authentication</h4><p>Use your API key in the header: <code>X-API-Key: your-api-key</code></p><h4>Endpoint</h4><p><code>POST https://api.aerialview.ai/analyze</code></p><h4>Sample Request</h4><pre style='background:#0C0F1A;padding:10px;border-radius:8px;overflow-x:auto;'><code>{\n  \"image_url\": \"https://...\",\n  \"sector\": \"agriculture\",\n  \"algorithm\": \"multispec\"\n}</code></pre><h4>Response</h4><pre style='background:#0C0F1A;padding:10px;border-radius:8px;'><code>{\n  \"detections\": [...],\n  \"total_objects\": 245,\n  \"confidence\": 94.2\n}</code></pre>" },
+        { id: 3, icon: "fa-chart-line", title: "Understanding Detection Metrics", desc: "Confidence scores, accuracy, and reporting explained", content: "<h3>Detection Metrics Explained</h3><p>Our AI provides several metrics to help you understand detection quality.</p><h4>Confidence Score</h4><p>Ranges from 0-100%. Higher scores indicate higher certainty. We recommend focusing on detections with >75% confidence for critical applications.</p><h4>False Positives</h4><p>Our algorithm minimizes false positives through ensemble learning. Typical false positive rate is &lt;5%.</p><h4>Accuracy by Sector</h4><ul><li>Disaster Response: 96%</li><li>Agriculture: 94%</li><li>Urban Planning: 93%</li><li>Defense: 97%</li></ul>" },
+        { id: 4, icon: "fa-shield-alt", title: "Security & Compliance", desc: "Data privacy, encryption standards, and certifications", content: "<h3>Security & Compliance</h3><p>Your data security is our priority. AerialView Pro is built with enterprise-grade security.</p><h4>Encryption</h4><p>All data is encrypted at rest (AES-256) and in transit (TLS 1.3).</p><h4>Certifications</h4><ul><li>SOC 2 Type II Compliant</li><li>GDPR Ready</li><li>CCPA Compliant</li><li>FedRAMP In Progress</li></ul><h4>Data Retention</h4><p>You control your data. Automatic deletion after 90 days for free tier. Enterprise plans offer custom retention policies.</p>" },
+        { id: 5, icon: "fa-cogs", title: "Custom Model Training", desc: "Train custom detection models for specific sectors", content: "<h3>Custom Model Training</h3><p>Need specialized detection for your unique use case? We offer custom model training.</p><h4>Process</h4><ol><li>Submit your annotated dataset (minimum 500 images)</li><li>Our ML team fine-tunes the model (2-3 days)</li><li>Deploy custom model via API or dashboard</li><li>Continuous improvement with your feedback</li></ol><h4>Supported Sectors</h4><ul><li>Wildfire detection</li><li>Maritime vessel tracking</li><li>Wildlife monitoring</li><li>Infrastructure inspection</li></ul><p>Contact our sales team for pricing: <a href='mailto:sales@aerialview.ai' style='color:var(--cyan)'>sales@aerialview.ai</a></p>" },
+        { id: 6, icon: "fa-video", title: "Video Tutorials", desc: "Step-by-step video guides for all features", content: "<h3>Video Tutorial Library</h3><p>Watch our comprehensive video guides to master AerialView Pro.</p><h4>Available Tutorials</h4><ul><li><strong>Getting Started (5 min)</strong> - First analysis walkthrough</li><li><strong>Advanced Detection Settings (10 min)</strong> - Tuning algorithms</li><li><strong>API Integration (15 min)</strong> - Connect to your app</li><li><strong>Batch Processing (8 min)</strong> - Analyze thousands of images</li><li><strong>Export & Reporting (6 min)</strong> - Generate professional reports</li></ul><p>All tutorials available on our YouTube channel. Subscribe for updates!</p>" }
+    ];
+
+    // Render Knowledge Base
+    function renderKnowledgeBase() {
+        const grid = document.getElementById('kbGrid');
+        grid.innerHTML = knowledgeBase.map(article => `
+            <div class="kb-article" onclick="openArticle(${article.id})">
+                <i class="fas ${article.icon}"></i>
+                <h4>${article.title}</h4>
+                <p>${article.desc}</p>
+                <span class="read-more">Read More →</span>
+            </div>
+        `).join('');
+    }
+
+    // Open Article Modal
+    function openArticle(id) {
+        const article = knowledgeBase.find(a => a.id === id);
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id = 'articleModal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="modal-close" onclick="closeModal('articleModal')">&times;</span>
+                <h2><i class="fas ${article.icon}" style="color:var(--cyan);margin-right:10px;"></i>${article.title}</h2>
+                ${article.content}
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+    }
+
+    // Search Knowledge Base
+    function searchKnowledgeBase() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        if (!term.trim()) return;
+        const results = knowledgeBase.filter(a => a.title.toLowerCase().includes(term) || a.desc.toLowerCase().includes(term));
+        if (results.length > 0) {
+            openArticle(results[0].id);
+        } else {
+            alert('No articles found. Try a different search term or ask our AI assistant!');
+            openChatbot();
+        }
+    }
+
+    // FAQ Data
+    const faqs = [
+        { q: "How accurate is the aerial detection algorithm?", a: "Our AI models achieve 94-98% accuracy across all sectors. The system uses ensemble learning with 12+ specialized algorithms optimized for different terrains and lighting conditions." },
+        { q: "What image formats are supported?", a: "We support JPEG, PNG, TIFF, GeoTIFF, and RAW formats. Maximum file size is 500MB per image. Batch processing available for enterprise plans." },
+        { q: "How long does analysis take?", a: "Standard analysis completes in under 1 second per image. Large-scale batch processing can handle thousands of images per minute on our GPU clusters." },
+        { q: "Is my data secure?", a: "Yes. All data is encrypted at rest and in transit. We are SOC 2 Type II compliant and offer on-premise deployment for sensitive missions." },
+        { q: "Can I integrate with my existing workflow?", a: "Absolutely. We offer REST API, webhooks, and SDKs for Python, JavaScript, and Go. Zapier integration available for no-code automation." }
+    ];
+
+    function renderFAQs() {
+        const container = document.getElementById('faqContainer');
+        container.innerHTML = faqs.map((faq, idx) => `
+            <div class="faq-item" style="border-bottom:1px solid var(--border);padding:16px 0;">
+                <div class="faq-question" style="display:flex;justify-content:space-between;cursor:pointer;font-weight:600;" onclick="toggleFaq(this)">
+                    <span>${faq.q}</span>
+                    <i class="fas fa-chevron-down" style="transition:0.2s;"></i>
+                </div>
+                <div class="faq-answer" style="max-height:0;overflow:hidden;transition:max-height 0.3s;color:var(--muted);font-size:13px;line-height:1.6;">${faq.a}</div>
+            </div>
+        `).join('');
+    }
+
+    function toggleFaq(element) {
+        const item = element.closest('.faq-item');
+        const answer = item.querySelector('.faq-answer');
+        const icon = element.querySelector('i');
+        if (answer.style.maxHeight && answer.style.maxHeight !== '0px') {
+            answer.style.maxHeight = '0';
+            icon.style.transform = 'rotate(0deg)';
+        } else {
+            answer.style.maxHeight = answer.scrollHeight + 'px';
+            icon.style.transform = 'rotate(180deg)';
+        }
+    }
+
+    // Chatbot AI Responses
+    const botResponses = {
+        "accuracy": "Our detection accuracy ranges from 94-98% depending on the sector. Agriculture: 94%, Disaster: 96%, Urban: 93%, Defense: 97%.",
+        "upload": "You can upload images on the Upload page. Supported formats: JPEG, PNG, TIFF, GeoTIFF. Max size 500MB.",
+        "algorithm": "We offer 12+ algorithms including Pixel Segmentation, YOLO-Aerial, Multi-Spectral NDVI, Thermal Edge Detection, and more.",
+        "sector": "We support 4 main sectors: Disaster Response, Agriculture, Urban Planning, and Defense. Each has specialized detection models.",
+        "api": "Our REST API allows integration. Get your API key from the dashboard. Endpoint: POST /api/analyze",
+        "price": "We offer Free tier (10 analyses/month), Pro ($49/month - 500 analyses), and Enterprise (custom pricing). Contact sales!",
+        "history": "All your analyses are saved in the History page. You can view, search, and delete past analyses.",
+        "dashboard": "The Dashboard shows your stats: total analyses, objects detected, average confidence, and recent activity charts.",
+        "contact": "You can reach us via email (support@aerialview.ai), phone (+1-888-430-AERO), or live chat here!",
+        "help": "I'm here to help! Ask me about uploads, algorithms, accuracy, API, pricing, or any feature of AerialView Pro."
+    };
+
+    function getBotResponse(question) {
+        const lowerQ = question.toLowerCase();
+        for (let [key, response] of Object.entries(botResponses)) {
+            if (lowerQ.includes(key)) return response;
+        }
+        return "Thanks for your question! I recommend checking our Knowledge Base articles or submitting a support ticket. Is there anything specific about aerial detection you'd like to know?";
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        if (!message) return;
+        
+        const messagesDiv = document.getElementById('chatMessages');
+        messagesDiv.innerHTML += `<div class="message user-message">${escapeHtml(message)}</div>`;
+        input.value = '';
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'typing-indicator';
+        typingDiv.innerHTML = '<span></span><span></span><span></span>';
+        messagesDiv.appendChild(typingDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        
+        setTimeout(() => {
+            messagesDiv.removeChild(typingDiv);
+            const response = getBotResponse(message);
+            messagesDiv.innerHTML += `<div class="message bot-message">${response}</div>`;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }, 800);
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function toggleChatbot() {
+        const container = document.getElementById('chatbotContainer');
+        container.style.display = container.style.display === 'flex' ? 'none' : 'flex';
+        if (container.style.display === 'flex') {
+            document.getElementById('chatInput').focus();
+        }
+    }
+
+    function openChatbot() {
+        const container = document.getElementById('chatbotContainer');
+        container.style.display = 'flex';
+        document.getElementById('chatInput').focus();
+    }
+
+    function showTicketForm() {
+        document.getElementById('ticketModal').style.display = 'flex';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+        const articleModal = document.getElementById('articleModal');
+        if (articleModal) articleModal.remove();
+    }
+
+    // Ticket form submission
+    document.getElementById('ticketForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Ticket submitted successfully! Our team will respond within 2 hours.');
+        closeModal('ticketModal');
+        this.reset();
+    });
+
+    // Canvas particles
+    (function setupCanvas() {
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+        resize(); window.addEventListener('resize', resize);
+        const parts = Array.from({ length: 70 }, () => ({ x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.6 + 0.3, vx: (Math.random() - 0.5) * 0.2, vy: (Math.random() - 0.5) * 0.2, alpha: Math.random() * 0.4 + 0.1, hue: Math.random() < 0.6 ? 185 : 12 }));
+        function draw() { 
+            ctx.clearRect(0, 0, w, h); 
+            parts.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fillStyle = `hsla(${p.hue},85%,65%,${p.alpha})`; ctx.fill(); p.x += p.vx; p.y += p.vy; if(p.x<0||p.x>w) p.vx*=-1; if(p.y<0||p.y>h) p.vy*=-1; }); 
+            for(let i=0;i<parts.length;i++) for(let j=i+1;j<parts.length;j++) { const dx=parts[i].x-parts[j].x, dy=parts[i].y-parts[j].y, d=Math.hypot(dx,dy); if(d<100) { ctx.beginPath(); ctx.moveTo(parts[i].x,parts[i].y); ctx.lineTo(parts[j].x,parts[j].y); ctx.strokeStyle=`rgba(0,212,255,${0.06*(1-d/100)})`; ctx.lineWidth=0.4; ctx.stroke(); } } 
+            requestAnimationFrame(draw);
+        }
+        draw();
+    })();
+
+    window.addEventListener('scroll', () => document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 60));
+    const observer = new IntersectionObserver(entries => entries.forEach(e => e.isIntersecting && e.target.classList.add('in')), { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    
+    renderKnowledgeBase();
+    renderFAQs();
+    window.openArticle = openArticle;
+    window.toggleFaq = toggleFaq;
+    window.sendMessage = sendMessage;
+    window.toggleChatbot = toggleChatbot;
+    window.openChatbot = openChatbot;
+    window.showTicketForm = showTicketForm;
+    window.closeModal = closeModal;
+    window.searchKnowledgeBase = searchKnowledgeBase;
+</script>
+
+</body>
+</html>
